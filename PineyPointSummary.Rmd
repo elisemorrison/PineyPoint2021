@@ -43,7 +43,7 @@ eff_d13C<-ggplot(effluent, aes(Location, `d13C (permil, vs VPDB)`))+
    panel_border(color="black")+
   xlab("")
 
-POM_d13C<-ggplot(noNA_onlysites, aes(Date, `d13C (permil, vs VPDB)`, color=GFF_ID))+
+POM_d13C<-ggplot(noNA_onlysites, aes(Date, `d13C (permil, vs VPDB)`))+
   geom_point()+
   facet_wrap(.~Location)+
   theme_cowplot(font_size = 8)+
