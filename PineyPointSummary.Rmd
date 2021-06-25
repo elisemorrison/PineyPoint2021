@@ -60,23 +60,6 @@ Figure 1. Changes in d13C values for particulate organic matter (POM) over time.
 Extra notes: Protein/carbohydrates higher/more enriched d13C value, lipids/lignin lower/depleted(more negative) value. OM decomposition selectively removes labile 13C depleting d13C. Photosynthetic carbon (d13C -27permil), atmospheric C (d13C -7permil). Photosynthetic biomass enriched, since dissolved CO2 or HCO3- is used for C fixation(d13C = 0permil). C4 plants more enriched (d13C values between 8-18permil), Algae pump either CO2 or HCO3 as a C source for photosynthesis (d13C = 0), while land plants use CO2 from atmosphere (d13C= -7permil), so algae have more enriched signature. (From Bianchi and Canuel, 2011). Effluent POM could be a combination of C4 plants (-16 to -9 permil; Sharp 2017), higher plants (-11.54 to -13.21permil, Homosassa to Wacassasa; Barry et al., 2018), algae -23.4permil; sediment (-16.14 to -19.86), seagrass leaf d13C was between -12 and -5permil. 
 -->
 
-```{r, eval=FALSE, echo=FALSE}
-#double check GFF ids
-noPP<-filter(noNA_onlysites, !grepl("PP", GFF_ID))
-
-noPP_d13C<-ggplot(noPP, aes(Date, `d13C (permil, vs VPDB)`, color=GFF_ID))+
-  geom_point()+
-  facet_wrap(.~Location)+
-  theme_cowplot(font_size = 8)+
-   panel_border(color="black")
-
-noPP_d15N<-ggplot(noPP, aes(Date, `d15N (permil, vs AIR)`, color=GFF_ID))+
-  geom_point()+
-  facet_wrap(.~Location)+
-  theme_cowplot(font_size = 8)+
-   panel_border(color="black")
-```
-
 
 ### d15N for all locations and sampling dates
 ```{r, echo=FALSE, warning=FALSE}
@@ -176,6 +159,7 @@ plot_grid(POM_TC, eff_TC, rel_widths = c(1, 0.25))
 nutrients_raw<-readxl::read_excel("../Data/PineyPoint_all_samples_w_data.xlsx")
 
 nutrients_raw$`OrthoP (ug/L)`<-as.numeric(nutrients_raw$`OrthoP (ug/L)`)
+nutrients_raw$`Salinity (ppt)`<-as.numeric(nutrients_raw$`Salinity (ppt)`)
 
 nutrients_onlysites<-filter(nutrients_raw, Location!=("Blank")&Location!=("Effluent"))
 nutrients_effluent<-filter(nutrients_raw, Location==("Effluent"))
@@ -274,4 +258,26 @@ chl<-ggplot(nutrients_onlysites, aes(`Date of Sample collection`, `Total Chl`))+
   ylab("Total chlorophyll (ug/L)")
 
 chl
+```
+
+```{r, echo=FALSE, warning=FALSE}
+nozeros<-filter(nutrients_onlysites, `NH4N (mg/L)`>0 & `NOx (mg/L)`>0)
+
+withPOM<-full_join(nozeros, noNA_onlysites)
+
+ggplot(withPOM, aes(`NH4N (mg/L)`, 
+                     `NOx (mg/L)`))+
+  geom_point()+
+  geom_smooth(method='lm', se=FALSE)
+
+ggplot(withPOM, aes(`NH4N (mg/L)`, 
+                     `wt %N`))+
+  geom_point()+
+  geom_smooth(method='lm', se=FALSE)
+
+ggplot(nutrients_onlysites, aes(`Salinity (ppt)`, `OrthoP (ug/L)`, color=Location))+
+  geom_point()+
+  geom_smooth(method='lm', se=FALSE)+
+  facet_wrap(.~Location, scales="free")
+
 ```
