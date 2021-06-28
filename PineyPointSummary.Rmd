@@ -140,7 +140,40 @@ POM_TC<-ggplot(noNA_onlysites, aes(Date, `wt %C`))+
 
 plot_grid(POM_TC, eff_TC, rel_widths = c(1, 0.25))
 ```
+Explore variablity in St. Joseph sound data
+Appears to be related to the site location, SSJS3 is the northermost site
 
+```{r, echo=FALSE, warning=FALSE, include=FALSE}
+#variability in St Joseph sound, so see if it's variability for each transect
+
+StJoe<-filter(noNA_onlysites, Location=="St. Joseph Sound")
+
+ggplot(StJoe, aes(Date, `wt %C`))+
+  geom_point()+
+  facet_wrap(.~Site)+
+  theme_cowplot(font_size = 8)+
+   panel_border(color="black")
+
+
+ggplot(StJoe, aes(Date, `d13C (permil, vs VPDB)`))+
+  geom_point()+
+  facet_wrap(.~Site)+
+  theme_cowplot(font_size = 8)+
+   panel_border(color="black")
+
+ggplot(StJoe, aes(Date, `wt %N`))+
+  geom_point()+
+  facet_wrap(.~Site)+
+  theme_cowplot(font_size = 8)+
+   panel_border(color="black")
+
+ggplot(StJoe, aes(Date, `wt %N`))+
+  geom_point()+
+  facet_wrap(.~Site)+
+  theme_cowplot(font_size = 8)+
+   panel_border(color="black")
+
+```
 
 ```{r, include=FALSE, echo=FALSE}
 ###extra code for shading dates, not used yet
