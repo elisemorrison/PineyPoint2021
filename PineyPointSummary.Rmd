@@ -20,7 +20,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```
 
-## Bulk Particulate Organic Matter
+## Bulk Particulate Organic Matter (POM)
 ```{r, include=FALSE, echo=FALSE}
 raw_POM<-readxl::read_excel("../Data/UF_SIL/Full_PP_GFF_data.xlsx", sheet = 1)
 
@@ -37,7 +37,7 @@ effluent<-filter(noNA_date, grepl("filter_pineypoint3", GFF_ID))
 ```
 
 
-### d13C for all locations and sampling dates
+### d13C for all locations and sampling dates for POM
 ```{r, echo=FALSE, warning=FALSE}
 eff_d13C<-ggplot(effluent, aes(Location, `d13C (permil, vs VPDB)`))+
   geom_point()+
@@ -54,14 +54,18 @@ POM_d13C<-ggplot(noNA_onlysites, aes(Date, `d13C (permil, vs VPDB)`))+
 
 plot_grid(POM_d13C, eff_d13C, rel_widths = c(1, 0.25))
 ```
-<!---
-Figure 1. Changes in d13C values for particulate organic matter (POM) over time. There is a clear enrichment of d13C values over the course of the study period.
 
-Extra notes: Protein/carbohydrates higher/more enriched d13C value, lipids/lignin lower/depleted(more negative) value. OM decomposition selectively removes labile 13C depleting d13C. Photosynthetic carbon (d13C -27permil), atmospheric C (d13C -7permil). Photosynthetic biomass enriched, since dissolved CO2 or HCO3- is used for C fixation(d13C = 0permil). C4 plants more enriched (d13C values between 8-18permil), Algae pump either CO2 or HCO3 as a C source for photosynthesis (d13C = 0), while land plants use CO2 from atmosphere (d13C= -7permil), so algae have more enriched signature. (From Bianchi and Canuel, 2011). Effluent POM could be a combination of C4 plants (-16 to -9 permil; Sharp 2017), higher plants (-11.54 to -13.21permil, Homosassa to Wacassasa; Barry et al., 2018), algae -23.4permil; sediment (-16.14 to -19.86), seagrass leaf d13C was between -12 and -5permil. 
+
+
+<!---Figure 1. Changes in d13C values for particulate organic matter (POM) over time. There is a clear enrichment of d13C values over the course of the study period.
+
+Extra notes: Protein/carbohydrates higher/more enriched d13C value, lipids/lignin lower/depleted(more negative) value. OM decomposition selectively removes labile 13C depleting d13C. Photosynthetic carbon (d13C -27permil), atmospheric C (d13C -7permil). Photosynthetic biomass enriched, since dissolved CO2 or HCO3- is used for C fixation(d13C = 0permil). C4 plants more enriched (d13C values between 8-18permil), Algae pump either CO2 or HCO3 as a C source for photosynthesis (d13C = 0), while land plants use CO2 from atmosphere (d13C= -7permil), so algae have more enriched signature. (From Bianchi and Canuel, 2011). Effluent POM could be a combination of C4 plants (-16 to -9 permil; Sharp 2017), higher plants (-11.54 to -13.21permil, Homosassa to Wacassasa; Barry et al., 2018), algae -23.4permil; sediment (-16.14 to -19.86), seagrass leaf d13C was between -12 and -5permil.
+
+Lyngbya: d13C
 -->
 
 
-### d15N for all locations and sampling dates
+### d15N for all locations and sampling dates for POM
 ```{r, echo=FALSE, warning=FALSE}
 
 eff_d15N<-ggplot(effluent, aes(Location, `d15N (permil, vs AIR)`))+
@@ -84,7 +88,7 @@ plot_grid(POM_d15N, eff_d15N, rel_widths = c(1, 0.25))
 Extra notes: Inorganic N species can have wide range of d15N values. d15N enriched 2 to 3 permil with each trophic level (Bianchi and Canuel, 2011). From Sharp (2017) average value of N fixation is less than 0permil. From Sharp 2017/Velinsky et al (1991), waters with NH4+ of 40uM, fractionation between POM and NH4 modeled to be -20 to -30permil. with lower concentrations, 9uM fractionations were -15 to -15permil. **Effluent had a NH4-N concentration of 61.6 uM.** Ammonium is lighter than nitrate by several per mil. Peterson and Fry's average estimate for precip are -18 to 8 for ammonium and -15 to 3 permil for NO3-. d15N values from most ocean materials are positive. 
 -->
 
-### C:N for all locations and sampling dates
+### C:N for all locations and sampling dates for POM
 ```{r, echo=FALSE, warning=FALSE}
 
 eff_CN<-ggplot(effluent, aes(Location, CN))+
@@ -103,7 +107,7 @@ POM_CN<-ggplot(noNA_onlysites, aes(Date, CN))+
 plot_grid(POM_CN, eff_CN, rel_widths = c(1, 0.25))
 ```
 
-### %TN for all locations and sampling dates
+### %TN for all locations and sampling dates for POM
 ```{r, echo=FALSE, warning=FALSE}
 
 eff_TN<-ggplot(effluent, aes(Location, `wt %N`))+
@@ -122,7 +126,7 @@ POM_TN<-ggplot(noNA_onlysites, aes(Date, `wt %N`))+
 plot_grid(POM_TN, eff_TN, rel_widths = c(1, 0.25))
 ```
 
-### %TC for all locations and sampling dates
+### %TC for all locations and sampling dates for POM
 ```{r, echo=FALSE, warning=FALSE}
 
 eff_TC<-ggplot(effluent, aes(Location, `wt %C`))+
@@ -141,7 +145,7 @@ POM_TC<-ggplot(noNA_onlysites, aes(Date, `wt %C`))+
 plot_grid(POM_TC, eff_TC, rel_widths = c(1, 0.25))
 ```
 Explore variablity in St. Joseph sound data
-Appears to be related to the site location, SSJS3 is the northermost site
+Appears to be related to the site location, SSJS3 is the northernmost site
 
 ```{r, echo=FALSE, warning=FALSE, include=FALSE}
 #variability in St Joseph sound, so see if it's variability for each transect
@@ -238,6 +242,17 @@ TP<-ggplot(nutrients_onlysites, aes(`Date of Sample collection`, `TotalP (ug/L)`
 plot_grid(TP, eff_TP, rel_widths = c(1, 0.25))
 ```
 
+### TKN
+```{r, echo=FALSE, warning=FALSE}
+TKN<-ggplot(nutrients_onlysites, aes(`Date of Sample collection`, `TKN (mg/L)`))+
+  geom_point()+
+  facet_wrap(.~Location)+
+  theme_cowplot(font_size = 8)+
+  panel_border(color="black")
+
+plot_grid(TKN, eff_TP, rel_widths = c(1, 0.25))
+```
+
 ### NH4-N
 ```{r, echo=FALSE, warning=FALSE}
 
@@ -293,24 +308,27 @@ chl<-ggplot(nutrients_onlysites, aes(`Date of Sample collection`, `Total Chl`))+
 chl
 ```
 
-```{r, echo=FALSE, warning=FALSE}
+```{r, echo=FALSE}
 nozeros<-filter(nutrients_onlysites, `NH4N (mg/L)`>0 & `NOx (mg/L)`>0)
 
 withPOM<-full_join(nozeros, noNA_onlysites)
 
-ggplot(withPOM, aes(`NH4N (mg/L)`, 
-                     `NOx (mg/L)`))+
-  geom_point()+
-  geom_smooth(method='lm', se=FALSE)
 
-ggplot(withPOM, aes(`NH4N (mg/L)`, 
-                     `wt %N`))+
+ggplot(withPOM, aes(`CN`, 
+                     `d15N (permil, vs AIR)`))+
   geom_point()+
-  geom_smooth(method='lm', se=FALSE)
+  geom_smooth()
 
-ggplot(nutrients_onlysites, aes(`Salinity (ppt)`, `OrthoP (ug/L)`, color=Location))+
-  geom_point()+
-  geom_smooth(method='lm', se=FALSE)+
-  facet_wrap(.~Location, scales="free")
+ggplot(withPOM, aes(`wt %C`, 
+                     `d15N (permil, vs AIR)`))+
+  geom_point(aes(color=`Location`))+
+  geom_smooth()
+
+ggplot(withPOM, aes(`wt %N`, 
+                     `d15N (permil, vs AIR)`))+
+  geom_point(aes(color=`Location`))+
+  geom_smooth()
+
+
 
 ```
