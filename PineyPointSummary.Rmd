@@ -30,8 +30,8 @@ noNA_date$`wt %N`<-as.numeric(noNA_date$`wt %N`)
 noNA_date$`wt %C`<-as.numeric(noNA_date$`wt %C`)
 
 noNA_date<-mutate(noNA_date, CN=`wt %C`/`wt %N`)
-noNA_onlysites<-filter(noNA_date, Location!=("Blank")&Location!=("Effluent"))
-effluent<-filter(noNA_date, grepl("filter_pineypoint3", GFF_ID))
+#noNA_onlysites<-filter(noNA_date, Location!=("Blank")&Location!=("Effluent"))
+#effluent<-filter(noNA_date, grepl("filter_pineypoint3", GFF_ID))
 
 
 ```
@@ -198,8 +198,8 @@ nutrients_raw<-readxl::read_excel("../Data/PineyPoint_all_samples_w_data.xlsx")
 nutrients_raw$`OrthoP (ug/L)`<-as.numeric(nutrients_raw$`OrthoP (ug/L)`)
 nutrients_raw$`Salinity (ppt)`<-as.numeric(nutrients_raw$`Salinity (ppt)`)
 
-nutrients_onlysites<-filter(nutrients_raw, Location!=("Blank")&Location!=("Effluent"))
-nutrients_effluent<-filter(nutrients_raw, Location==("Effluent"))
+#nutrients_onlysites<-filter(nutrients_raw, Location!=("Blank")&Location!=("Effluent"))
+#nutrients_effluent<-filter(nutrients_raw, Location==("Effluent"))
 
 
 ```
@@ -309,11 +309,16 @@ chl
 ```
 
 ```{r, echo=FALSE}
-nozeros<-filter(nutrients_onlysites, `NH4N (mg/L)`>0 & `NOx (mg/L)`>0)
+#nozeros<-filter(nutrients_onlysites, `NH4N (mg/L)`>0 & `NOx (mg/L)`>0)
 
-withPOM<-full_join(nozeros, noNA_onlysites)
+#withPOM<-full_join(nozeros, noNA_onlysites)
 
+all_data_w_eff<-full_join(noNA_date, nutrients_raw)
+#### TODO: need to fix the name of the date columns - they currently don't match and are causing issues
+```
 
+## Test plots to look at relationships between variables
+```{r, echo=FALSE}
 ggplot(withPOM, aes(`CN`, 
                      `d15N (permil, vs AIR)`))+
   geom_point()+
@@ -329,6 +334,81 @@ ggplot(withPOM, aes(`wt %N`,
   geom_point(aes(color=`Location`))+
   geom_smooth()
 
+### look for conservative behavior in ortho-P, TP, TKN, NH4
 
+ggplot(withPOM, aes(`Salinity (ppt)`, 
+                     `d15N (permil, vs AIR)`))+
+  geom_point(aes(color=`Location`))+
+  geom_smooth(method = "lm")
+
+ggplot(withPOM, aes(`Salinity (ppt)`, 
+                     `OrthoP (umol/L)`))+
+  geom_point(aes(color=`Location`))+
+  geom_smooth(method = "lm")
+
+
+```
+
+
+### Phytoplankton community data
+
+```{r, echo=FALSE}
+
+## received phytoplankton community data from the priority sites, since 4/2021, from E. Phlips. Have one file with biovolume and biomass, and another for phytoplankton biomass by group
+
+#first look at the simpler dataset, phytoplankton biomass by group in ug C/ml
+
+bygroup<-read_excel("../Data/Phlips/Piney Point Phyto by group carbon 09 15 2021 draft.xlsx", sheet = 1, skip=1)
+#skip the first row, which just says "phytoplankton biomass by group in ug C/ml", so we can keep column headers
+
+#column 8 was also left blank, remove
+bygroup<-bygroup[,-8]
+
+#rename column names: Site, should be SampleID to match WQ data
+#rename DATE to Date of sample collection
+bygroup_renamed<-rename(bygroup, `Date of Sample collection`=DATE)
+bygroup_renamed<-rename(bygroup_renamed, SampleID=SITE)
+
+## there are some inconsistencies between the Phlip's lab site IDs and the water sample IDs
+## its mostly related to cases, although the first batch of samples 1-4 were labeled 1Y-4Y for water samples, 1X-4X for phyto samples
+## make sampleIDs consistent
+
+bygroup_renamed<-mutate_if(bygroup_renamed,
+                            is.character,
+                            str_replace_all, pattern = "x", replacement = "Y") %>% 
+                  mutate_if(is.character,
+                            str_replace_all, pattern="BHSONDE", replacement="BH Sonde") %>% 
+                  mutate_if(is.character,
+                            str_replace_all,  pattern="JBYSI", replacement="JB Sonde") %>% 
+                  mutate_if(is.character,
+                            str_replace_all,  pattern="JB6", replacement="JB-6") %>% 
+                  mutate_if(is.character,
+                            str_replace_all, pattern="JBSONDE", replacement="JB Sonde") %>% 
+                  mutate_if(is.character,
+                            str_replace_all, pattern="PPEFFL", replacement="Piney Point Effluent") %>% 
+                  mutate_if(is.character,
+                            str_replace_all, pattern="PPSONDE", replacement="PP Sonde") %>% 
+                  mutate_if(is.character,
+                            str_replace_all, pattern="SSJSSOND", replacement="SSJS Sonde")
+
+
+
+all_data_w_eff<-mutate_if(all_data_w_eff, 
+                          is.character, 
+                          str_replace_all, pattern="SSJS sonde", replacement="SSJS Sonde") %>% 
+                mutate_if(is.character, 
+                          str_replace_all, pattern="JBYSI (Joe Bay)", replacement="JB Sonde")
+
+
+
+##join with the water chem data by date and site
+chem_phyto<-full_join(bygroup_renamed, all_data_w_eff)
+
+
+```
+
+```{r, echo=FALSE}
+ggplot(chem_phyto, aes('TotalP (ug/L)', Karenia))+
+  geom_point()
 
 ```
