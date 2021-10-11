@@ -14,6 +14,7 @@ library(readxl)
 library(lubridate)
 library(cowplot)
 library(knitr)
+library(ggpubr)
 
 knitr::opts_chunk$set(echo = TRUE)
 
@@ -329,7 +330,8 @@ POM<-mutate_if(noNA_date,
 
 nutrients<-mutate_if(nutrients,
                             is.character,
-                            str_replace_all, pattern="JBYSI (Joe Bay)", replacement="JB Sonde")
+                            str_replace_all, pattern="JBYSI (Joe Bay)", replacement="JB Sonde") %>% 
+  mutate_if(is.character, str_replace_all, pattern="Effluent", replacement="Piney Point Effluent")
 
 all_data_w_eff<-full_join(POM, nutrients, by=c("SampleID", "Date"))
 
@@ -376,11 +378,11 @@ ggplot(withPOM, aes(`Salinity (ppt)`,
 
 #first look at the simpler dataset, phytoplankton biomass by group in ug C/ml
 
-bygroup<-read_excel("../Data/Phlips/Piney Point Phyto by group carbon 09 15 2021 draft.xlsx ", sheet = 1, skip=1)
-#skip the first row, which just says "phytoplankton biomass by group in ug C/ml", so we can keep column headers
+bygroup<-read_excel("../Data/Phlips/Copy of Piney Point Phyto by group revised 10 07 2021.xlsx ", sheet = 1, skip=1)
+#skip the first row, which just says "Piney Point Phytoplankton by Group 10 07 2021", so we can keep column headers
 
 #column 9 was also left blank, remove
-bygroup<-bygroup[,-9]
+#bygroup<-bygroup[,-9]
 
 #rename column names: Site, should be SampleID to match WQ data
 #rename DATE to Date of sample collection
@@ -390,10 +392,6 @@ bygroup_renamed<-rename(bygroup_renamed, SampleID=SITE)
 #phytogroups
 bygroup_keysites<-filter(bygroup_renamed,  Location=="Piney Point Effluent"|Location=="Piney Point"| Location=="Joe Bay"| Location=="Bishop Harbor"|Location=="St. Joseph Sound") %>% 
   select(-Total)
-
-## see if any groups are correlated
-corrplot()
-
 
 
 #create barplots over time series
@@ -413,22 +411,25 @@ longPhyto<-mutate_if(longPhyto,
   mutate_if(is.character, str_replace_all, pattern = "Dino", replacement = "Dinoflagellate")
 
 longPhyto_effluent<-filter(longPhyto, Location=="Piney Point Effluent")
-longPhyto_sites<-filter(longPhyto, Location=="Piney Point"| Location=="Joe Bay"| Location=="Bishop Harbor"|Location=="St. Joseph Sound")
+longPhyto_keysites<-filter(longPhyto, Location=="Piney Point Effluent"| Location=="Piney Point"| Location=="Joe Bay"| Location=="Bishop Harbor"|Location=="St. Joseph Sound")
 
-longPhyto_sites$Location<-ordered(longPhyto_sites$Location, c("St. Joseph Sound", "Piney Point", "Bishop Harbor", "Joe Bay"))
+longPhyto_keysites$Location<-ordered(longPhyto_keysites$Location, c("St. Joseph Sound", "Piney Point Effluent", "Piney Point", "Bishop Harbor", "Joe Bay"))
+
+longPhyto_keysites<-mutate_if(longPhyto_keysites,
+                            is.character,
+                            str_replace_all, pattern = "Effluent", replacement = "Discharge")
 
 
-sites<-ggplot(longPhyto_sites, aes(x=`Date of Sample collection`, y=Biomass_ugC_ml, fill=factor(Group)))+
+sites<-ggplot(longPhyto_keysites, aes(x=`Date of Sample collection`, y=Biomass_ugC_ml, fill=factor(Group)))+
   geom_bar(stat="identity")+ #add , position="fill" if you want % barplots
-  ylab("Biomass (ug C/ml)")+
   facet_wrap(.~Location, ncol=1, scales="free_y")+
-  labs(fill = "Phytoplankton Group")+
+  labs(fill = "Group")+
   scale_fill_brewer(palette="Dark2")+
   theme_classic()+
-  theme(axis.text.x = element_text(angle = -45))+
   ylab(expression(paste("Biomass (µg C ml"^-1,")")))+
   theme(text = element_text(size = 18))+
-  xlab("")
+  xlab("")+
+  theme(axis.text.x = element_text(angle = 90))
 
 effluent<-ggplot(longPhyto_effluent, aes(x=`Date of Sample collection`, y=Biomass_ugC_ml, fill=factor(Group)))+
   geom_bar(stat="identity")+ #add , position="fill" if you want % barplots
@@ -438,7 +439,10 @@ effluent<-ggplot(longPhyto_effluent, aes(x=`Date of Sample collection`, y=Biomas
   theme_classic()+
   theme(axis.text.x = element_text(angle = -45))+
   ylab(expression(paste("Biomass (ug C ml"^-1,")")))+
-  theme(text = element_text(size = 18))  
+  theme(text = element_text(size = 18))+
+  ylim(0,3)+
+  theme(legend.position = "none")+
+  xlab("")
 
 plot_grid(sites, effluent, rel_widths = c(1, 0.5))
   
@@ -456,10 +460,63 @@ species<-read_excel("../Data/Phlips/Piney Point phytoplankton 07 22 2021 draft.x
 key<-read_excel("../../PineyPoint/SiteID and Regions Piney Point RAPID.xlsx")
 
 #get column names to match
-key<-rename(key, Site=SITE, Location=REGION)
+key<-rename(key, Site=SITE, Location=REGION)]
 
 #join key with species
 species_key<-full_join(species, key, by="Site")
+
+## Garrett et al., 2011 found Heterosigma akashiwo and Prorocentrum minimum bloomed after previous phosphate release in Bishop Harbor
+
+species_key_w_percent<-species_key %>% 
+  group_by(Date, Site, Location) %>% 
+  mutate(totalbiomass=sum(Biomass)) %>% 
+  ungroup() %>% 
+  group_by(Date, Site, Location, Species) %>% 
+  mutate(percentbiomass=(Biomass/totalbiomass)*100) %>%
+  ungroup() %>% 
+  group_by(Date, Location, Species) %>% 
+  mutate(averageBiomass=mean(Biomass, na.rm=TRUE), 
+         averagePercentBiomass=mean(percentbiomass, na.rm=TRUE)) %>% 
+  unique()
+  
+
+akashiwo<-filter(species_key_w_percent, Species=="Heterosigma akashiwo") %>% 
+    filter(Location=="Piney Point"| Location=="Joe Bay"| Location=="Bishop Harbor"|Location=="St. Joseph Sound") %>% 
+  unique()
+
+
+ggplot(akashiwo, aes(Date, averageBiomass, fill=factor(Species)))+
+         geom_bar(stat="identity")+
+         facet_wrap(.~Location, ncol=1, scales="free_y")+
+        labs(fill = "Species")+
+        scale_fill_brewer(palette="Dark2")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = -45))+
+        ylab(expression(paste("Biomass (ug C ml"^-1,")")))+
+        theme(text = element_text(size = 18))  
+
+prorocentrum<-filter(species_key_w_percent, grepl("Prorocentrum", Species)) %>% 
+  unique() %>% 
+  filter(Location=="Piney Point"| Location=="Joe Bay"| Location=="Bishop Harbor"|Location=="St. Joseph Sound") %>% 
+  unique()
+
+
+prorocentrum$Date<-as.character(prorocentrum$Date)
+
+prorocentrum$Location<-ordered(prorocentrum$Location, c("St. Joseph Sound", "Piney Point", "Bishop Harbor", "Joe Bay"))
+
+
+ggplot(prorocentrum, aes(Date, averageBiomass, fill=factor(Species)))+
+         geom_bar(stat="identity")+
+         facet_wrap(.~Location, ncol=1)+
+        labs(fill = "Species")+
+        scale_fill_brewer(palette="Dark2")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = -45))+
+        ylab(expression(paste("Biomass (ug C ml"^-1,")")))+
+        theme(text = element_text(size = 18))  
+
+
 
 #create simple dataframe to make long format
 simplespecies<-select(species_key, Site, Location, Date, Biomass, Species) %>% 
@@ -480,17 +537,27 @@ ggplot(wideSpecies, aes(`Nannoplankton (2µ - 5µ)`, `≥ 10 ≤ 20µ diameter c
 
 ```{r, echo=FALSE}
 #bring in chlorophyll data
-chl<-read_excel("../Data/Phlips/Piney Point Chl for Elise 09 17 2021.xlsx")
+chl<-read_excel("../Data/Phlips/Piney Point Chl for Elise 09 17 2021 trimmed.xlsx")
 
 
 chl_keysites<-filter(chl, Location=="Piney Point"| Location=="Joe Bay"| Location=="Bishop Harbor"|Location=="St. Joseph Sound")
 
+
+chl_keysites$Location<-ordered(chl_keysites$Location, c("St. Joseph Sound", "Piney Point", "Bishop Harbor", "Joe Bay"))
+
+chl_keysites$`Date of Sample Collection`<-as.character(chl_keysites$`Date of Sample Collection`)
+
 ggplot(chl_keysites, aes(x= `Date of Sample Collection`, y=`Total`))+
   geom_point()+
   facet_wrap(.~Location, ncol=1)+
-  geom_line()+
-  ylab("Total chl (ug/L)")
+  geom_smooth(se=FALSE)+
+  ylab("Total chl (ug/L)")+
+  xlab("")+
+   theme_classic()+
+  theme(text = element_text(size = 18))+
+  theme(axis.text.x = element_text(angle = -45))
 
+chl_phyto<-full_join(chl_keysites, )
 
 
 ## there are some inconsistencies between the Phlip's lab site IDs and the water sample IDs
@@ -536,18 +603,31 @@ KeyLocations<-filter(nutrients, Location=="Piney Point"|
                                         Location=="St. Joseph Sound")
                                         
 
+KeyLocations$Location<-ordered(KeyLocations$Location, c("St. Joseph Sound", "Piney Point", "Bishop Harbor", "Joe Bay"))
+
 
 ggplot(KeyLocations, aes(x= Date, y=`OrthoP (ug/L)`))+
   geom_point()+
   facet_wrap(.~Location, ncol=1)+
-  geom_smooth(se=FALSE)
+  geom_smooth(se=FALSE)+
+  theme_classic()+
+  ggtitle("Orthophosphate")+
+  theme(text = element_text(size = 18)) 
 
 ggplot(KeyLocations, aes(x= Date, y=`TotalP (ug/L)`))+
   geom_point()+
   facet_wrap(.~Location, ncol=1)+
-  geom_smooth(se=FALSE)
+  geom_smooth(se=FALSE)+
+  theme_classic()+
+  ggtitle("Total Phosphorus")+
+  theme(text = element_text(size = 18)) 
 
 ggplot(KeyLocations, aes(x= Date, y=`NH4N (mg/L)`))+
+  geom_point()+
+  facet_wrap(.~Location, ncol=1)+
+  geom_smooth(se=FALSE)
+
+ggplot(KeyLocations, aes(x= Date, y=`TKN (mg/L)`))+
   geom_point()+
   facet_wrap(.~Location, ncol=1)+
   geom_smooth(se=FALSE)
@@ -585,5 +665,43 @@ ggplot(longPhytoNutrients, aes(x=`Date of Sample collection`, y=Biomass_ugC_ml, 
   facet_wrap(.~Location, ncol=1)+
   geom_smooth(aes(x= `Date of Sample collection`, y=`OrthoP (ug/L)`), se=FALSE)+
   scale_y_continuous(sec.axis=sec_axis(~., name="OrthoP (ug/L)"))
+
+```
+
+
+```{r, echo=FALSE}
+###Bring in water stable isotope values
+water<-read_excel("../Data/UF_SIL/Water/Picarro_master_dataset.xlsx")
+
+#remove standards for plotting
+waterSamples<-filter(water, Location!="Standard"&Location!="Blank")
+
+#plot summary for all sites
+ggplot(waterSamples, aes(x=Date, y=`d18OVSMOW (‰)`))+
+  geom_point()+
+  facet_wrap(.~Location, ncol=1, scales="free_y")
+
+ggplot(waterSamples, aes(x=Date, y=`δ2HVSMOW (‰)`))+
+  geom_point()+
+  facet_wrap(.~Location, ncol=1, scales="free_y")
+
+
+#match/join with nutrients
+
+waterIsoChem<-full_join(waterSamples, nutrients)
+
+waterIsoChem_noeff<-filter(waterIsoChem, Location!="Piney Point Effluent")
+
+ggplot(waterIsoChem, aes(x=`d18OVSMOW (‰)`, y=`δ2HVSMOW (‰)`))+
+         geom_point()+
+  geom_smooth(method = lm, se=FALSE)+
+          geom_abline(aes(intercept=10,slope=8))+
+  xlim(-2, 3)+
+  ylim(7, 20)
+
+ggscatter(waterIsoChem, x=`d18OVSMOW (‰)`, y=`δ2HVSMOW (‰)`, add="reg.line")+
+  stat_cor(label.y=17)+
+  stat_regline_equation(label.y=16)
+
 
 ```
