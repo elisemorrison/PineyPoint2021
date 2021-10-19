@@ -677,13 +677,28 @@ water<-read_excel("../Data/UF_SIL/Water/Picarro_master_dataset.xlsx")
 waterSamples<-filter(water, Location!="Standard"&Location!="Blank")
 
 #plot summary for all sites
-ggplot(waterSamples, aes(x=Date, y=`d18OVSMOW (‰)`))+
+ggplot(waterSamples, aes(x=Date, y=`δ18OVSMOW (‰)`))+
   geom_point()+
-  facet_wrap(.~Location, ncol=1, scales="free_y")
+  facet_wrap(.~Location, ncol=1)
 
 ggplot(waterSamples, aes(x=Date, y=`δ2HVSMOW (‰)`))+
   geom_point()+
-  facet_wrap(.~Location, ncol=1, scales="free_y")
+  facet_wrap(.~Location, ncol=1)
+
+ggplot(waterSamples, aes(`d18OVSMOW (‰)`, y=`δ2HVSMOW (‰)`))+
+  geom_point()
+
+ggplot(waterSamples, aes(x=`d18OVSMOW (‰)`, y=`δ2HVSMOW (‰)`))+
+         geom_point(aes(color=Location))+
+  geom_smooth(method = lm, se=FALSE)+
+          geom_abline(aes(intercept=10,slope=8))+
+  xlim(-2, 3)+
+  ylim(7, 20)
+
+#falls outside of the expected line
+
+
+##read in precip data
 
 
 #match/join with nutrients
