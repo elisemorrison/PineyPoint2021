@@ -720,3 +720,65 @@ ggscatter(waterIsoChem, x=`d18OVSMOW (‰)`, y=`δ2HVSMOW (‰)`, add="reg.line"
 
 
 ```
+
+```{r, echo=FALSE}
+
+#bring in the sonde dataset
+
+
+pp<-read_excel("../../Data/Sonde_data_from_Alteri_gdrive/Sonde_data_consolidated_April_to_July.xlsx", sheet = 1)
+ssjs<-read_excel("../../Data/Sonde_data_from_Alteri_gdrive/Sonde_data_consolidated_April_to_July.xlsx", sheet = 2)
+bh<-read_excel("../../Data/Sonde_data_from_Alteri_gdrive/Sonde_data_consolidated_April_to_July.xlsx", sheet = 3)
+jb<-read_excel("../../Data/Sonde_data_from_Alteri_gdrive/Sonde_data_consolidated_April_to_July.xlsx", sheet = 4)
+
+# join all dataset together
+pp_ssjs_joined<-full_join(pp, ssjs)
+pp_ssjs_bh<-full_join(pp_ssjs_joined, bh)
+pp_ssjs_bh_jb<-full_join(pp_ssjs_bh, jb)
+
+#plot chlorophyll
+ggplot(pp_ssjs_bh_jb, aes(x= `Date (MM/DD/YYYY)`, y=`Chlorophyll ug/L`))+
+  geom_point()+
+  facet_wrap(.~Location, ncol=1, scales="free_y")+
+  geom_smooth(se=FALSE)+
+  theme_classic()+
+  ggtitle("Chlorophyll")+
+  theme(text = element_text(size = 18))
+
+ggplot(pp_ssjs_bh_jb, aes(x= `Date (MM/DD/YYYY)`, y=`ODO mg/L`))+
+  geom_point()+
+  facet_wrap(.~Location, ncol=1)+
+  geom_smooth(se=FALSE)+
+  theme_classic()+
+  ggtitle("Dissolved Oxygen (mg/L)")+
+  theme(text = element_text(size = 18))
+
+ggplot(pp_ssjs_bh_jb, aes(x= `Date (MM/DD/YYYY)`, y=`Cond µS/cm`))+
+  geom_point()+
+  facet_wrap(.~Location, ncol=1)+
+  geom_smooth(se=FALSE)+
+  theme_classic()+
+  ggtitle("Cond µS/cm")+
+  theme(text = element_text(size = 18))
+
+
+ggplot(pp_ssjs_bh_jb, aes(x= `Date (MM/DD/YYYY)`, y=`Sal psu`))+
+  geom_point()+
+  facet_wrap(.~Location, ncol=1)+
+  geom_smooth(se=FALSE)+
+  theme_classic()+
+  ggtitle("Sal psu")+
+  theme(text = element_text(size = 18))
+
+
+```
+
+
+
+
+
+
+
+
+
+

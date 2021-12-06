@@ -31,7 +31,7 @@ TODO: details about facility, region, past studies of phytoplankton communities,
 Multiple stable isotopes can provide information regarding the source and processing of elements in the environment. 
 
 ```{r, echo=FALSE}
-knitr::include_graphics("../Maps/NSF_RAPID_study_sites.jpg")
+knitr::include_graphics("../../../Maps/NSF_RAPID_study_sites.jpg")
 ```
 Figure 1. Location of sampling sites, and the Piney Point facility, studied here.
 
@@ -49,7 +49,7 @@ Figure 1. Location of sampling sites, and the Piney Point facility, studied here
 ## Results
 
 ```{r, echo=FALSE}
-raw_POM<-readxl::read_excel("../Data/UF_SIL/Full_PP_GFF_data.xlsx", sheet = 1)
+raw_POM<-readxl::read_excel("../../Data/UF_SIL/Full_PP_GFF_data.xlsx", sheet = 1)
 
 #remove any NA dates
 noNA_date<-raw_POM[!is.na(raw_POM$Date), ]  
@@ -115,12 +115,6 @@ ggplot(noNA_onlysites, aes(Date, `d13C (permil, vs VPDB)`))+
    panel_border(color="black")+
   facet_wrap(.~Location)
 
-eff_d13C<-ggplot(effluent, aes(Location, `d13C (permil, vs VPDB)`))+
-  geom_point()+
-  scale_y_continuous(limits = c(-31, -15))+
-  theme_cowplot(font_size = 8)+
-   panel_border(color="black")+
-  xlab("")
 
 POM_d13C<-ggplot(noNA_onlysites, aes(Date, `d13C (permil, vs VPDB)`))+
   geom_point()+
