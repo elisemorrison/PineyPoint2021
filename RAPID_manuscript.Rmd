@@ -9,7 +9,7 @@ output:
 
 ## Abstract
 
-In spring 2021, a failure of the liner at the Piney Point facility, a decommissioned fertilizer facility, prompted the controlled release of an estimated 215 million gallons of untreated water into Tampa Bay, from March 29th to April 9th. Here, we address the following research questions: (1) What was the effect of the N- and P-rich discharge on nutrient cycling within Tampa Bay; (2) What changes in phytoplankton community composition and trophic status were seen over the course of the summer, following the discharge? Here, we address these questions through the evaluation of water column nutrients, phytoplankton community analysis, and stable isotopes of particulate organic matter, seagrasses, and macroalgae, coupled with continuous water quality measurements. Four sites were selected for continuous monitoring and included a region adjacent to the discharge site (Piney Point), two back bay regions, one of which was a site of previous discharge in 2003 (Bishop Harbor and Joe Bay), and one reference site located outside of the bay (St. Joseph Sound).
+Coastal ecosystems are increasingly subjected to chronic and episodic nutrient loading, largely driven by anthropogenic activities. Excess nutrients in the coastal zone can decrease water quality, increase phytoplankton and macroalgae biomass, and, in some circumstances, result in declines in seagrass cover. In spring 2021, a failure of the liner at the Piney Point facility, a decommissioned fertilizer facility, prompted the controlled release of an estimated 215 million gallons of mixed process and dredge water into Tampa Bay, from March 29th to April 9th. This discharge was high in total nitrogen and total phosphorus, which were predominantly in the forms of ammonium/ammonia and orthophosphate. Here, we address the following research questions: (1) What was the effect of the N- and P-rich discharge on nutrient cycling within Tampa Bay; and (2) What changes in phytoplankton community composition and trophic status were seen over the course of the summer, following the discharge? We hypothesized that the fate of the nitrogen- and phosphorus-rich discharge water included a combination of the following processes: assimilation of nutrients by some phytoplankton and macroalgae, transport throughout and export outside of the bay, and some amount of deposition into bay sediments. Here, we address these questions through the evaluation of water column nutrients, phytoplankton community analysis, and stable isotopes of particulate organic matter, seagrasses, and macroalgae, coupled with continuous water quality measurements. Four sites were selected for continuous monitoring and included a region adjacent to the discharge site (Piney Point), two back bay regions, one of which was a site of previous discharge in 2003 (Bishop Harbor and Joe Bay), and one reference site located outside of the bay (St. Joseph Sound).
 
 ```{r setup, include=FALSE, echo=FALSE}
 library(tidyverse)
@@ -38,10 +38,15 @@ Figure 1. Location of sampling sites, and the Piney Point facility, studied here
 
 ## Methods
 
+### Study site
+Samples were collected on a bi-weekly basis from April 2021 until [present]. Four monitoring sites were selected, and included a 
 ### Bulk measures
-  Particulate organic matter (POM) was collected on pre-combusted 25mm diameter glass fiber filters (GF/F). Seagrass and macroalgae tissues were rinsed with deionized water after collection, and then frozen. Tissues and filters were freeze dried then analyzed for total carbon, total nitrogen, delta 13C, and d15N.
+Particulate organic matter (POM) was collected on pre-combusted 25mm diameter glass fiber filters (GF/F; nominal pore size 0.7um). Seagrass and macroalgae tissues were rinsed with deionized water after collection, and then frozen. Tissues and filters were freeze dried then analyzed for total carbon, total nitrogen, delta 13C, and d15N.
 
-  Certified analyses were conducted at the University of Florida's Analytical Research Laboratory for total phosphorus (TP), orthophosphate (SRP), total kjeldahl nitrogen (TKN), ammonium (NH4) and nitrate+nitrite (NOx).
+Certified analyses were conducted at the University of Florida's Analytical Research Laboratory for total phosphorus (TP; EPA Method 365.1), orthophosphate (OrthoP; EPA Method 365.1), total kjeldahl nitrogen (TKN; EPA 351.2), ammonium-N (NH4; EPA 350.1) and nitrate+nitrite (NOx; EPA 353.2).
+
+### In situ measurements
+
   
   
 ### 
@@ -93,14 +98,14 @@ POM_summary<-noNA_onlysites %>%
   select(Location, Date, d15N, TN, d13C, TC, TN)
 ```
 
-### Bulk measures
+### Particulate organic matter
 There were distinct differences in bulk measures over the study period. 
 
 When d13C and 15N POM isotope values were compared with a bi-plot, there is a convergence of the stable isotope values of the offshore site, with signatures very similar to those of the Piney Point effluent. (Figure 2)
 
 
 ```{r, echo=FALSE, warning=FALSE}
-ggplot(noNA_onlysites, aes(`d13C (permil, vs VPDB)`, `d15N (permil, vs AIR)`, color=Date, shape=Location))+
+ggplot(noNA_date, aes(`d13C (permil, vs VPDB)`, `d15N (permil, vs AIR)`, color=Location))+
   geom_point(size=4)+
   theme_cowplot(font_size = 13)+
    panel_border(color="black")
@@ -119,6 +124,12 @@ ggplot(noNA_onlysites, aes(Date, `d13C (permil, vs VPDB)`))+
 POM_d13C<-ggplot(noNA_onlysites, aes(Date, `d13C (permil, vs VPDB)`))+
   geom_point()+
   facet_wrap(.~Location)+
+  theme_cowplot(font_size = 8)+
+   panel_border(color="black")+
+  geom_smooth(se=FALSE)
+
+POM_CN_d15N<-ggplot(noNA_onlysites, aes(CN, `d15N (permil, vs AIR)`))+
+  geom_point(aes(color=as.factor(Date)))+
   theme_cowplot(font_size = 8)+
    panel_border(color="black")+
   geom_smooth(se=FALSE)
