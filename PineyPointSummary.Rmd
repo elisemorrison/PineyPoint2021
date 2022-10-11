@@ -168,14 +168,29 @@ plot_grid(POM_d13C, eff_d13C, rel_widths = c(1, 0.25))
 
 #rather than show effluent as a separate plot, add value as hline
 
-d13C<-ggplot(noNA_noBlank, aes(Date, `d13C (permil, vs VPDB)`))+
+d13C<-ggplot(noNA_onlysites, aes(Date, `d13C (permil, vs VPDB)`))+
   geom_point()+
+  geom_line()+
   facet_wrap(.~Location)+
   theme_cowplot(font_size = 8)+
    panel_border(color="black")+
-  geom_hline(yintercept = -14.01:-15.82, color="red")
+  geom_hline(yintercept = -14.01:-15.82, color="#00BA38")+
+  geom_vline(xintercept = as.numeric(as.POSIXct(as.Date("2021-07-05"))), linetype=4, color="black")+
+  geom_vline(xintercept = as.numeric(as.POSIXct(as.Date("2021-04-07"))), linetype=4, color="red")+
+  labs(y="*&delta;*<sup>13</sup>C (&permil; vs.VPDB)", 
+       x="Date", 
+       title = "*&delta;*<sup>13</sup>C (&permil; vs.VPDB)")+
+  theme(
+    axis.title.x = element_markdown(),
+    axis.title.y = element_markdown(), 
+    plot.title = element_markdown(),
+    text = element_text(size = 14), 
+    axis.text = element_text(size = 9), 
+    axis.text.x = element_text(angle = -45, hjust = 0.1, vjust = 0.1)
+        )  
 
 d13C
+
 
 ```
 
@@ -208,14 +223,35 @@ POM_d15N<-ggplot(noNA_onlysites, aes(Date, `d15N (permil, vs AIR)`))+
 plot_grid(POM_d15N, eff_d15N, rel_widths = c(1, 0.25))
 
 #rather than plotting the effluent separately, add as a bar 
-d15N<-ggplot(noNA_noBlank, aes(Date, `d15N (permil, vs AIR)`))+
+d15N<-ggplot(noNA_onlysites, aes(Date, `d15N (permil, vs AIR)`))+
   geom_point()+
+  geom_line()+
   facet_wrap(.~Location)+
   theme_cowplot(font_size = 8)+
    panel_border(color="black")+
- geom_hline(yintercept = -19.24:-17.36, color="red")
+  geom_hline(yintercept = -19.24:-17.36, color="#00BA38")+
+  geom_vline(xintercept = as.numeric(as.POSIXct(as.Date("2021-07-05"))), linetype=4, color="black")+
+  geom_vline(xintercept = as.numeric(as.POSIXct(as.Date("2021-04-07"))), linetype=4, color="red")+
+  labs(y="*&delta;*<sup>15</sup>N (&permil;vs.Air)", 
+       x="Date", 
+       title = "*&delta;*<sup>15</sup>N (&permil;vs. Air)")+
+  theme(
+    axis.title.x = element_markdown(),
+    axis.title.y = element_markdown(), 
+    plot.title = element_markdown(),
+    text = element_text(size = 14), 
+    axis.text = element_text(size = 9), 
+    axis.text.x = element_text(angle = -45, hjust = 0.1, vjust = 0.1)
+        )
 
 d15N
+
+###Plot d13C and d15N together
+
+iso_CN_plot<-plot_grid(d15N, d13C, labels=c("A", "B"), ncol=1)
+
+
+ggsave("./Figures/Frontiers_2022/iso_CN_plot.png", iso_CN_plot, width=10, height=8)
 
 ```
 <!---Figure 2. POM d15N values. 
@@ -877,10 +913,10 @@ ggscatter(waterIsoChem, x=`d18OVSMOW (‰)`, y=`δ2HVSMOW (‰)`, add="reg.line"
 #bring in the sonde dataset
 
 
-pp<-read_excel("../../Data/Sonde_data_from_Alteri_gdrive/Sonde_data_consolidated_April_to_July.xlsx", sheet = 1)
-ssjs<-read_excel("../../Data/Sonde_data_from_Alteri_gdrive/Sonde_data_consolidated_April_to_July.xlsx", sheet = 2)
-bh<-read_excel("../../Data/Sonde_data_from_Alteri_gdrive/Sonde_data_consolidated_April_to_July.xlsx", sheet = 3)
-jb<-read_excel("../../Data/Sonde_data_from_Alteri_gdrive/Sonde_data_consolidated_April_to_July.xlsx", sheet = 4)
+pp<-read_excel("../../Data/Sonde_data/Sonde_data_from_Alteri_gdrive/Sonde_data_consolidated_April_to_July.xlsx", sheet = 1)
+ssjs<-read_excel("../../Data/Sonde_data/Sonde_data_from_Alteri_gdrive/Sonde_data_consolidated_April_to_July.xlsx", sheet = 2)
+bh<-read_excel("../../Data/Sonde_data/Sonde_data_from_Alteri_gdrive/Sonde_data_consolidated_April_to_July.xlsx", sheet = 3)
+jb<-read_excel("../../Data/Sonde_data/Sonde_data_from_Alteri_gdrive/Sonde_data_consolidated_April_to_July.xlsx", sheet = 4)
 
 # join all dataset together
 pp_ssjs_joined<-full_join(pp, ssjs)
