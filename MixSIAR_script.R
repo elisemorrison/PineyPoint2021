@@ -4,18 +4,17 @@ library(MixSIAR)
 
 ### from https://peerj.com/articles/5096/
 
-mix.filename.pp<-"../../Data/MixSIAR/PineyPoint_mixture_biweekly.csv"
+mix.filename.pp<-"../../Data/MixSIAR/all_sites_mixture_biweekly.csv"
 mix.pp <- load_mix_data(filename=mix.filename.pp, 
-                     iso_names=c("d13C","d15N"), 
-                     factors=c("Location", "BiweeklyInterval"), 
-                     fac_random=c(TRUE, TRUE), 
-                     fac_nested=c(FALSE, FALSE), 
-                     cont_effects=NULL)
+                     iso_names=c("d13C","d15N"),
+                     factors=c("Location"), 
+                     fac_random=TRUE, 
+                     fac_nested=FALSE, 
+                     cont_effects=c("BiweeklyInterval"))
 
-#difficult to get continuous effect with date, went with day of the year for 2021, and then 365+day of year for 2022 dates
-#may be a better way to do this
+#working with bi-weekly intervals to have more samples included for time intervals
 
-source.filename.pp<-"../../Data/MixSIAR/source_tidy_2022_10_11_PP.csv"
+source.filename.pp<-"../../Data/MixSIAR/source.csv"
 source.pp <- load_source_data(filename=source.filename.pp,
                            source_factors=NULL,
                            conc_dep=FALSE, 
@@ -24,10 +23,10 @@ source.pp <- load_source_data(filename=source.filename.pp,
 
 #set discrimination factor to 0
 #per manual, TDF is the amount that a consumer's tissue biotracer values are modified (enriched/depleted) after consuming a source. If tracers are conservative, then set TDF = 0 (ex. essential fatty acids, fatty acid profile data, element concentrations). 
-discr.filename<-"../../Data/MixSIAR/discr_tidy_2022_10_11.csv"
+discr.filename<-"../../Data/MixSIAR/discr.csv"
 discr <- load_discr_data(filename=discr.filename, mix.pp)
 
-plot_data(filename="./MixSIAR_output/2022_10_11_biweekly_cont/isospace_plot", plot_save_pdf=TRUE, plot_save_png=TRUE, mix.pp,source.pp, discr)
+plot_data(filename="./MixSIAR_output/2022_10_17_all_sites_biweekly_cont/isospace_plot", plot_save_pdf=TRUE, plot_save_png=TRUE, mix.pp,source.pp, discr)
 
 calc_area(source=source.pp,mix=mix.pp,discr=discr)
 #21.53565
@@ -36,7 +35,7 @@ plot_prior(alpha.prior=1,source.pp)
 
 # Write the JAGS model file
 
-model_filename <- "./MixSIAR_output/2022_10_11_biweekly_cont/MixSIAR_model_pp.txt"   # Name of the JAGS model file
+model_filename <- "./MixSIAR_output/2022_10_17_all_sites_biweekly_cont/MixSIAR_model_all_sites_biweekly_cont.txt"   # Name of the JAGS model file
 resid_err <- TRUE
 process_err <- TRUE
 write_JAGS_model(model_filename, resid_err, process_err, mix.pp, source.pp)
@@ -59,7 +58,7 @@ plot_continuous_var(jags.1, mix.pp, source.pp, output_options=list(summary_save 
                                                                    sup_pairs = FALSE, plot_pairs_save_pdf = TRUE, plot_pairs_name = "pairs_plot", sup_xy
                                                                    = TRUE, plot_xy_save_pdf = FALSE, plot_xy_name = "xy_plot", gelman = TRUE, heidel =
                                                                     FALSE, geweke = TRUE, diag_save = TRUE, diag_name = "diagnostics", indiv_effect =
-                                                                     FALSE, plot_post_save_png = FALSE, plot_pairs_save_png = FALSE, plot_xy_save_png =
+                                                                     FALSE, plot_post_save_png = TRUE, plot_pairs_save_png = FALSE, plot_xy_save_png =
                                                                      FALSE, diag_save_ggmcmc = TRUE))
 
 
@@ -112,10 +111,11 @@ output_JAGS(jags.1, mix.pp, source.pp, output_options=list(summary_save = TRUE, 
                                                              FALSE, geweke = TRUE, diag_save = TRUE, diag_name = "diagnostics", indiv_effect =
                                                              FALSE, plot_post_save_png = FALSE, plot_pairs_save_png = FALSE, plot_xy_save_png =
                                                              FALSE, diag_save_ggmcmc = TRUE))
+
 plot_continuous_var(jags.1, mix.pp, source.pp, alphaCI=0.75, output_options=list(summary_save = TRUE, summary_name = "summary_statistics",
-                                                                   sup_post = FALSE, plot_post_save_pdf = TRUE, plot_post_name = "posterior_density",
-                                                                   sup_pairs = FALSE, plot_pairs_save_pdf = TRUE, plot_pairs_name = "pairs_plot", sup_xy
-                                                                   = TRUE, plot_xy_save_pdf = FALSE, plot_xy_name = "xy_plot", gelman = TRUE, heidel =
-                                                                     FALSE, geweke = TRUE, diag_save = TRUE, diag_name = "diagnostics", indiv_effect =
-                                                                     FALSE, plot_post_save_png = FALSE, plot_pairs_save_png = FALSE, plot_xy_save_png =
-                                                                     FALSE, diag_save_ggmcmc = TRUE))
+                                                                   sup_post = TRUE, plot_post_save_pdf = TRUE, plot_post_name = "posterior_density",
+                                                                   sup_pairs = TRUE, plot_pairs_save_pdf = TRUE, plot_pairs_name = "pairs_plot", sup_xy
+                                                                   = TRUE, plot_xy_save_pdf = TRUE, plot_xy_name = "xy_plot", gelman = TRUE, heidel =
+                                                                     TRUE, geweke = TRUE, diag_save = TRUE, diag_name = "diagnostics", indiv_effect =
+                                                                     TRUE, plot_post_save_png = TRUE, plot_pairs_save_png = TRUE, plot_xy_save_png =
+                                                                     TRUE, diag_save_ggmcmc = TRUE))
