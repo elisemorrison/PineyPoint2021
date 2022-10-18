@@ -14,7 +14,7 @@ mix.pp <- load_mix_data(filename=mix.filename.pp,
 
 #working with bi-weekly intervals to have more samples included for time intervals
 
-source.filename.pp<-"../../Data/MixSIAR/source.csv"
+source.filename.pp<-"../../Data/MixSIAR/source_tidy_2022_10_11.csv"
 source.pp <- load_source_data(filename=source.filename.pp,
                            source_factors=NULL,
                            conc_dep=FALSE, 
@@ -23,10 +23,10 @@ source.pp <- load_source_data(filename=source.filename.pp,
 
 #set discrimination factor to 0
 #per manual, TDF is the amount that a consumer's tissue biotracer values are modified (enriched/depleted) after consuming a source. If tracers are conservative, then set TDF = 0 (ex. essential fatty acids, fatty acid profile data, element concentrations). 
-discr.filename<-"../../Data/MixSIAR/discr.csv"
+discr.filename<-"../../Data/MixSIAR/discr_tidy_2022_10_11.csv"
 discr <- load_discr_data(filename=discr.filename, mix.pp)
 
-plot_data(filename="./MixSIAR_output/2022_10_17_all_sites_biweekly_cont/isospace_plot", plot_save_pdf=TRUE, plot_save_png=TRUE, mix.pp,source.pp, discr)
+plot_data(filename="./MixSIAR_output/2022_10_17_all_sites_biweekly_cont_veryLong/isospace_plot", plot_save_pdf=TRUE, plot_save_png=TRUE, mix.pp,source.pp, discr)
 
 calc_area(source=source.pp,mix=mix.pp,discr=discr)
 #21.53565
@@ -35,16 +35,16 @@ plot_prior(alpha.prior=1,source.pp)
 
 # Write the JAGS model file
 
-model_filename <- "./MixSIAR_output/2022_10_17_all_sites_biweekly_cont/MixSIAR_model_all_sites_biweekly_cont.txt"   # Name of the JAGS model file
+model_filename <- "./MixSIAR_output/2022_10_17_all_sites_biweekly_cont_veryLong/MixSIAR_model_all_sites_biweekly_cont_very_long.txt"   # Name of the JAGS model file
 resid_err <- TRUE
 process_err <- TRUE
 write_JAGS_model(model_filename, resid_err, process_err, mix.pp, source.pp)
 
-run <- list(chainLength=100,000, burn=50,000, thin=50, chains=3, calcDIC=TRUE)
+run <- list(chainLength=1,000,000, burn=500,000, thin=500, chains=3, calcDIC=TRUE)
 
 jags.1 <- run_model(run="test", mix.pp, source.pp, discr, model_filename)
 
-jags.1 <- run_model(run="normal", mix.pp, source.pp, discr, model_filename)
+jags.1 <- run_model(run="very long", mix.pp, source.pp, discr, model_filename)
 
 output_JAGS(jags.1, mix.pp, source.pp, output_options=list(summary_save = TRUE, summary_name = "summary_statistics",
                                                            sup_post = FALSE, plot_post_save_pdf = TRUE, plot_post_name = "posterior_density",
