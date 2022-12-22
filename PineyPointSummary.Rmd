@@ -50,13 +50,15 @@ effluent<-filter(noNA_date, grepl("filter_pineypoint3", GFF_ID))
 
 #generate test plots
 C<-ggplot(noNA_onlysites, aes(Date, `wt %C`))+
+  geom_vline(xintercept = as.numeric(as.POSIXct(as.Date("2021-07-05"))), linetype=4, color="black")+ #date of tropical storm Elsa
+  geom_vline(xintercept = as.numeric(as.POSIXct(as.Date("2021-04-09"))), linetype=4, color="green")+ #date of effluent collection
+  geom_rect(aes(ymin=-Inf, ymax=Inf, xmin=as.POSIXct(as.Date("2021-03-30"), xmax=as.POSIXct(as.Date("2021-04-09")))), color="#00BA38", fill="#00BA38", alpha=0.01)+
+  #geom_rect(aes(ymin=-Inf, ymax=Inf, xmin=as.POSIXct(as.Date("2021-06-13")), xmax=as.POSIXct(as.Date("2021-07-18"))), color="red", fill="red", alpha=0.01)+ #week of Jun 13 to July 18th reported as "high" k brevis from Beck et al., 2022, use dates
   geom_point()+
   geom_line()+
   facet_wrap(.~Location)+
   theme_cowplot(font_size = 8)+
    panel_border(color="black")+
-  geom_vline(xintercept = as.numeric(as.POSIXct(as.Date("2021-07-05"))), linetype=4, color="black")+
-  geom_vline(xintercept = as.numeric(as.POSIXct(as.Date("2021-04-07"))), linetype=4, color="red")+
   ggtitle("Total carbon")+
   ylab("Total carbon (%)")+
   theme(text = element_text(size = 14), 
@@ -231,11 +233,11 @@ noNA_onlysites$`d15N (permil, vs AIR)`<-as.numeric(noNA_onlysites$`d15N (permil,
 
 #rather than plotting the effluent separately, add as a bar 
 d15N<-ggplot(noNA_onlysites, aes(Date, `d15N (permil, vs AIR)`))+
-  geom_hline(yintercept = -19.24:-17.36, color="#00BA38")+
-  geom_vline(xintercept = as.numeric(as.POSIXct(as.Date("2021-07-05"))), linetype=4, color="black")+ #date of tropical storm Elsa
-  geom_vline(xintercept = as.numeric(as.POSIXct(as.Date("2021-04-09"))), linetype=4, color="green")+ #date of effluent collection
-  geom_rect(aes(ymin=-30, ymax=15, xmin=as.POSIXct(as.Date("2021-03-30")), xmax=as.POSIXct(as.Date("2021-04-09"))), color="#00BA38", fill="#00BA38", alpha=0.01)+
-  geom_rect(aes(ymin=-30, ymax=15, xmin=as.POSIXct(as.Date("2021-06-13")), xmax=as.POSIXct(as.Date("2021-07-18"))), color="red", fill="red", alpha=0.01)+ #week of Jun 13 to July 18th reported as "high" k brevis from Beck et al., 2022, use dates 
+  #geom_hline(yintercept = -19.24:-17.36, color="#00BA38")+
+  #geom_vline(xintercept = as.numeric(as.POSIXct(as.Date("2021-07-05"))), linetype=4, color="black")+ #date of tropical storm Elsa
+  #geom_vline(xintercept = as.numeric(as.POSIXct(as.Date("2021-04-09"))), linetype=4, color="green")+ #date of effluent collection
+  #geom_rect(aes(ymin=-30, ymax=15, xmin=as.Date("2021-03-30"), xmax=as.Date("2021-04-09")), color="#00BA38", fill="#00BA38", alpha=0.01)+
+  #geom_rect(aes(ymin=-30, ymax=15, xmin=as.Date("2021-06-13"), xmax=as.Date("2021-07-18")), color="red", fill="red", alpha=0.01)+ #week of Jun 13 to July 18th reported as "high" k brevis from Beck et al., 2022, use dates 
   geom_point()+
   geom_line()+
   facet_wrap(.~Location)+
