@@ -392,6 +392,31 @@ nutrients_effluent<-filter(nutrients_year, Location==("Effluent"))
 
 ```
 
+```{r, echo=FALSE, warning=FALSE, include=FALSE}
+
+
+#set values that are below detection limit to NA
+nutrients_year_filtered<-mutate(nutrients_year, `NH4N (mg/L)` = replace(`NH4N (mg/L)`, `NH4N flag`=="T"|`NH4N flag`=="T,J"|`NH4N flag`=="T, J"|`NH4N flag`=="T,Y"|`NH4N flag`=="T, Y" , NA), #want to use grepl but don't know how
+         `NOx (mg/L)` = replace(`NOx (mg/L)`, `NOx flag`=="T"|`NOx flag`=="T,J"|`NOx flag`=="T, J"|`NOx flag`=="T,Y"|`NOx flag`=="T, Y" , NA),
+         `OrthoP (ug/L)` = replace(`OrthoP (ug/L)`, `OrthoP flag`=="T"|`OrthoP flag`=="T,J"|`OrthoP flag`=="T, J"|`OrthoP flag`=="T,Y"|`OrthoP flag`=="T, Y" , NA),
+         `TotalP (ug/L)` = replace(`TotalP (ug/L)`, `TotalP flag`=="T"|`TotalP flag`=="T,J"|`TotalP flag`=="T, J"|`TotalP flag`=="T,Y"|`TotalP flag`=="T, Y" , NA),
+         `TKN (mg/L)` = replace(`TKN (mg/L)`, `TKN flag`=="T"|`TKN flag`=="T,J"|`TKN flag`=="T, J"|`TKN flag`=="T,Y"|`TKN flag`=="T, Y" , NA))
+
+summary_all_nutrients<-nutrients_year_filtered %>% 
+  filter(Location=="St. Joseph Sound"|Location=="Piney Point"|Location=="Joe Bay"|Location=="Bishop Harbor"|Location=="Piney Point Facility") %>% #don't use effluent values, not certified samples, all other samples certified and values are used
+  separate(`Date of Sample collection`, into=c("Year", "Month", "Day")) %>% 
+  select(SampleID, Location, Year, Month, `NH4N (mg/L)`, `NOx (mg/L)`, `OrthoP (ug/L)`, 
+         `TotalP (ug/L)`, `TKN (mg/L)`) %>% 
+  group_by(Location, Year, Month) %>% 
+  summarise_all(list(mean=mean, sd=sd, min=min, max=max), na.rm=TRUE) %>% 
+  select_if(!grepl("SampleID", names(.))) %>% 
+  unique()
+
+write.csv(summary_all_nutrients, "2023_01_10_nutrient_data_summarized.csv")
+
+```
+
+
 ### Orthophosphate
 ```{r, echo=FALSE, warning=FALSE}
 
