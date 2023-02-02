@@ -1,12 +1,12 @@
 ---
-title: "UF - Morrison Lab Preliminary Piney Point Results"
+title: "UF - Morrison Lab Piney Point Results"
 output:
   pdf_document: default
   html_document: default
   word_document: default
 ---
 
-Preliminary analysis of results from NSF RAPID project on tracking the effects of Piney Point discharge on Tampa Bay. Sites throughout Tampa Bay and St. Joseph Sound were sampled at minimum every two weeks. 
+Analysis from NSF RAPID project on tracking the effects of Piney Point discharge on Tampa Bay. Sites throughout Tampa Bay and St. Joseph Sound were sampled at minimum every two weeks. 
 
 ```{r setup, include=FALSE, echo=FALSE}
 library(tidyverse)
@@ -24,12 +24,15 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Bulk Particulate Organic Matter (POM)
 ```{r, include=FALSE, echo=FALSE}
-raw_POM<-readxl::read_excel("../../Data/UF_SIL/Full_PP_GFF_data.xlsx", sheet = 1)
+#raw_POM<-readxl::read_excel("../../Data/UF_SIL/Full_PP_GFF_data.xlsx", sheet = 1)
+
+raw_POM<-read.csv("./Data/SPM_Frontiers.csv")
 
 noNA_date<-raw_POM[!is.na(raw_POM$Date), ]  
-noNA_date$`wt %N`<-as.numeric(noNA_date$`wt %N`)
-noNA_date$`wt %C`<-as.numeric(noNA_date$`wt %C`)
-noNA_date<-mutate(noNA_date, CN=`wt %C`/`wt %N`)
+noNA_date$`wt %N`<-as.numeric(noNA_date$`wt..N`)
+noNA_date$`wt %C`<-as.numeric(noNA_date$`wt..C`)
+noNA_date<-mutate(noNA_date, CN=`wt..C`/`wt..N`)
+noNA_date$Date<-mdy(noNA_date$Date)
 
 noNA_noBlank<-filter(noNA_date, Location!="Blank")
 
@@ -37,22 +40,17 @@ noNA_onlysites<-filter(noNA_date, Location==("Piney Point")
                        |Location==("Bishop Harbor")
                        |Location==("Joe Bay")
                        |Location==("St Joseph Sound"))
-effluent<-filter(noNA_date, grepl("filter_pineypoint3", GFF_ID))
-
-#order from Piney Point, BH, JB, then reference site, SSJS
-#noNA_onlysites$Location<-ordered(noNA_onlysites$Location, c("Piney Point", "Bishop Harbor", "Joe Bay", "St Joseph Sound"))
-##TN St Joseph sound breaks with this; fix order later
 
 
 ```
 
 ```{r, echo=FALSE, warning=FALSE}
 
-#generate test plots
+#generate C, N, C:N plot
 C<-ggplot(noNA_onlysites, aes(Date, `wt %C`))+
-  geom_vline(xintercept = as.POSIXct(as.Date("2021-07-05")), linetype=4, color="black")+ #date of tropical storm Elsa
-  geom_rect(aes(ymin=-Inf, ymax=Inf, xmin=as.POSIXct(as.Date("2021-03-30")), xmax=as.POSIXct(as.Date("2021-04-09"))), fill="#00BA38", alpha=0.01)+
-  geom_rect(aes(ymin=-Inf, ymax=Inf, xmin=as.POSIXct(as.Date("2021-06-13")), xmax=as.POSIXct(as.Date("2021-07-18"))), fill="red", alpha=0.01)+ #week of Jun 13 to July 18th reported as "high" k brevis from Beck et al., 2022, use dates
+  geom_vline(xintercept = as.Date("2021-07-05"), linetype=4, color="black")+ #date of tropical storm Elsa
+  geom_rect(aes(ymin=-Inf, ymax=Inf, xmin=as.Date("2021-03-30"), xmax=as.Date("2021-04-09")), fill="#00BA38", alpha=0.01)+
+  geom_rect(aes(ymin=-Inf, ymax=Inf, xmin=as.Date("2021-06-13"), xmax=as.Date("2021-07-18")), fill="red", alpha=0.01)+ #week of Jun 13 to July 18th reported as "high" k brevis from Beck et al., 2022, use dates
   geom_point()+
   geom_line()+
   facet_wrap(.~Location)+
@@ -68,9 +66,9 @@ C<-ggplot(noNA_onlysites, aes(Date, `wt %C`))+
   
 
 N<-ggplot(noNA_onlysites, aes(Date, `wt %N`))+
-  geom_vline(xintercept = as.POSIXct(as.Date("2021-07-05")), linetype=4, color="black")+ #date of tropical storm Elsa
-  geom_rect(aes(ymin=-Inf, ymax=Inf, xmin=as.POSIXct(as.Date("2021-03-30")), xmax=as.POSIXct(as.Date("2021-04-09"))), fill="#00BA38", alpha=0.01)+
-  geom_rect(aes(ymin=-Inf, ymax=Inf, xmin=as.POSIXct(as.Date("2021-06-13")), xmax=as.POSIXct(as.Date("2021-07-18"))), fill="red", alpha=0.01)+ #week of Jun 13 to July 18th reported as "high" k brevis from Beck et al., 2022, use dates
+  geom_vline(xintercept = as.Date("2021-07-05"), linetype=4, color="black")+ #date of tropical storm Elsa
+  geom_rect(aes(ymin=-Inf, ymax=Inf, xmin=as.Date("2021-03-30"), xmax=as.Date("2021-04-09")), fill="#00BA38", alpha=0.01)+
+  geom_rect(aes(ymin=-Inf, ymax=Inf, xmin=as.Date("2021-06-13"), xmax=as.Date("2021-07-18")), fill="red", alpha=0.01)+ #week of Jun 13 to July 18th reported as "high" k brevis from Beck et al., 2022, use dates
   geom_point()+
    geom_line()+
   facet_wrap(.~Location)+
@@ -85,9 +83,9 @@ N<-ggplot(noNA_onlysites, aes(Date, `wt %N`))+
         )  
 
 CN<-ggplot(noNA_onlysites, aes(Date, CN))+
-    geom_vline(xintercept = as.POSIXct(as.Date("2021-07-05")), linetype=4, color="black")+ #date of tropical storm Elsa
-  geom_rect(aes(ymin=-Inf, ymax=Inf, xmin=as.POSIXct(as.Date("2021-03-30")), xmax=as.POSIXct(as.Date("2021-04-09"))), fill="#00BA38", alpha=0.01)+
-  geom_rect(aes(ymin=-Inf, ymax=Inf, xmin=as.POSIXct(as.Date("2021-06-13")), xmax=as.POSIXct(as.Date("2021-07-18"))), fill="red", alpha=0.01)+ #week of Jun 13 to July 18th reported as "high" k brevis from Beck et al., 2022, use dates
+    geom_vline(xintercept = as.Date("2021-07-05"), linetype=4, color="black")+ #date of tropical storm Elsa
+  geom_rect(aes(ymin=-Inf, ymax=Inf, xmin=as.Date("2021-03-30"), xmax=as.Date("2021-04-09")), fill="#00BA38", alpha=0.01)+
+  geom_rect(aes(ymin=-Inf, ymax=Inf, xmin=as.Date("2021-06-13"), xmax=as.Date("2021-07-18")), fill="red", alpha=0.01)+ #week of Jun 13 to July 18th reported as "high" k brevis from Beck et al., 2022, use dates
   geom_point()+
   geom_line()+
   facet_wrap(.~Location)+
@@ -109,22 +107,33 @@ ggsave("./Figures/Frontiers_2022/2022_12_13_POM_all.png", POM_plot, width=10, he
 ```
 
 ```{r, echo=FALSE, warning=FALSE}
+
+noNA_onlysites$`d15N..permil..vs.AIR.)`<-as.numeric(noNA_onlysites$`d15N..permil..vs.AIR.`)
+
 noNA_onlysites_summary<-noNA_onlysites %>% 
   group_by(Location, month_year) %>% 
-  summarize_at(c("d15N (permil, vs AIR)", "d13C (permil, vs VPDB)", 
+  summarize_at(c("d15N..permil..vs.AIR.", "d13C..permil..vs.VPDB.", 
                  "wt %C", "wt %N", "CN"),  list(mean = mean, sd = sd), na.rm=TRUE)
 
-write.csv(noNA_onlysites_summary, "./Tables/Temp_tables/2022_01_13_POM_summary.csv")
+write.csv(noNA_onlysites_summary, "./Tables/Temp_tables/2023_POM_summary.csv")
+
+noNA_onlysites_all_values<-noNA_onlysites %>% 
+  select("Location", "Date", "d15N..permil..vs.AIR.", "d13C..permil..vs.VPDB.", 
+                 "wt %C", "wt %N", "CN") %>%
+  unique()
+  
+write.csv(noNA_onlysites_all_values, "./Tables/Temp_tables/2023_POM_all.csv")
 
 ```
 
 
 ```{r, echo=FALSE, warning=FALSE}
-all_data<-ggplot(noNA_date, aes(CN, `d13C (permil, vs VPDB)`, color=Location)) +
+#test plot; not used in manuscript
+
+all_data<-ggplot(noNA_date, aes(CN, `d13C..permil..vs.VPDB.`, color=Location)) +
   geom_point()
 
-#blanks plot outside rest of data
-no_blank_plot<-ggplot(noNA_noBlank, aes(CN, `d13C (permil, vs VPDB)`, color=Location)) +
+no_blank_plot<-ggplot(noNA_noBlank, aes(CN, `d13C..permil..vs.VPDB.`, color=Location)) +
   geom_rect(aes(ymin=-12, ymax=-25.5, xmin=4, xmax=6), color="cyan4", fill="cyan4", alpha=0.01)+ #bacteria
   geom_text(aes(x = 4.5, y = -14, label = "Bacteria"),size = 3, vjust = 0, hjust = 0, color = "black")+
   geom_rect(aes(ymin=-17, ymax=-9, xmin=20, xmax=30), color="gold3", fill="gold3", alpha=0.02)+ #C4 plants
@@ -157,29 +166,12 @@ no_blank_plot
 ### d13C for all locations and sampling dates for POM
 ```{r, echo=FALSE, warning=FALSE}
 
-noNA_onlysites$`d13C (permil, vs VPDB)`<-as.numeric(noNA_onlysites$`d13C (permil, vs VPDB)`)
+noNA_onlysites$`d13C..permil..vs.VPDB.`<-as.numeric(noNA_onlysites$`d13C..permil..vs.VPDB.`)
 
-eff_d13C<-ggplot(effluent, aes(Location, `d13C (permil, vs VPDB)`))+
-  geom_point()+
-  scale_y_continuous(limits = c(-31, -15))+
-  theme_cowplot(font_size = 8)+
-   panel_border(color="black")+
-  xlab("")
-
-POM_d13C<-ggplot(noNA_onlysites, aes(Date, `d13C (permil, vs VPDB)`))+
-  geom_point()+
-  facet_wrap(.~Location)+
-  theme_cowplot(font_size = 8)+
-   panel_border(color="black")
-
-plot_grid(POM_d13C, eff_d13C, rel_widths = c(1, 0.25))
-
-#rather than show effluent as a separate plot, add value as hline
-
-d13C<-ggplot(noNA_onlysites, aes(Date, `d13C (permil, vs VPDB)`))+
-  geom_vline(xintercept = as.POSIXct(as.Date("2021-07-05")), linetype=4, color="black")+ #date of tropical storm Elsa
-  geom_rect(aes(ymin=-Inf, ymax=Inf, xmin=as.POSIXct(as.Date("2021-03-30")), xmax=as.POSIXct(as.Date("2021-04-09"))), fill="#00BA38", alpha=0.01)+
-  geom_rect(aes(ymin=-Inf, ymax=Inf, xmin=as.POSIXct(as.Date("2021-06-13")), xmax=as.POSIXct(as.Date("2021-07-18"))), fill="red", alpha=0.01)+ #week of Jun 13 to July 18th reported as "high" k brevis from Beck et al., 2022, use dates
+d13C<-ggplot(noNA_onlysites, aes(Date, `d13C..permil..vs.VPDB.`))+
+  geom_vline(xintercept = as.Date("2021-07-05"), linetype=4, color="black")+ #date of tropical storm Elsa
+  geom_rect(aes(ymin=-Inf, ymax=Inf, xmin=as.Date("2021-03-30"), xmax=as.Date("2021-04-09")), fill="#00BA38", alpha=0.01)+
+  geom_rect(aes(ymin=-Inf, ymax=Inf, xmin=as.Date("2021-06-13"), xmax=as.Date("2021-07-18")), fill="red", alpha=0.01)+ #week of Jun 13 to July 18th reported as "high" k brevis from Beck et al., 2022, use dates
   geom_point()+
   geom_line()+
   facet_wrap(.~Location)+
@@ -205,40 +197,16 @@ d13C
 
 
 
-<!---Figure 1. Changes in d13C values for particulate organic matter (POM) over time. There is a clear enrichment of d13C values over the course of the study period.
-
-Extra notes: Protein/carbohydrates higher/more enriched d13C value, lipids/lignin lower/depleted(more negative) value. OM decomposition selectively removes labile 13C depleting d13C. Photosynthetic carbon (d13C -27permil), atmospheric C (d13C -7permil). Photosynthetic biomass enriched, since dissolved CO2 or HCO3- is used for C fixation(d13C = 0permil). C4 plants more enriched (d13C values between 8-18permil), Algae pump either CO2 or HCO3 as a C source for photosynthesis (d13C = 0), while land plants use CO2 from atmosphere (d13C= -7permil), so algae have more enriched signature. (From Bianchi and Canuel, 2011). Effluent POM could be a combination of C4 plants (-16 to -9 permil; Sharp 2017), higher plants (-11.54 to -13.21permil, Homosassa to Wacassasa; Barry et al., 2018), algae -23.4permil; sediment (-16.14 to -19.86), seagrass leaf d13C was between -12 and -5permil.
-
-Lyngbya: d13C
--->
-
-
 ### d15N for all locations and sampling dates for POM
 ```{r, echo=FALSE, warning=FALSE}
 
-noNA_onlysites$`d15N (permil, vs AIR)`<-as.numeric(noNA_onlysites$`d15N (permil, vs AIR)`)
+noNA_onlysites$`d15N..permil..vs.AIR.`<-as.numeric(noNA_onlysites$`d15N..permil..vs.AIR.`)
 
 
-# eff_d15N<-ggplot(effluent, aes(Location, `d15N (permil, vs AIR)`))+
-#   geom_point()+
-#   scale_y_continuous(limits = c(-18, 4))+
-#   theme_cowplot(font_size = 8)+
-#    panel_border(color="black")+
-#   xlab("")
-# 
-# POM_d15N<-ggplot(noNA_onlysites, aes(Date, `d15N (permil, vs AIR)`))+
-#   geom_point()+
-#   facet_wrap(.~Location)+
-#   theme_cowplot(font_size = 8)+
-#    panel_border(color="black")
-# 
-# plot_grid(POM_d15N, eff_d15N, rel_widths = c(1, 0.25))
-
-#rather than plotting the effluent separately, add as a bar 
-d15N<-ggplot(noNA_onlysites, aes(Date, `d15N (permil, vs AIR)`))+
-  geom_vline(xintercept = as.POSIXct(as.Date("2021-07-05")), linetype=4, color="black")+ #date of tropical storm Elsa
-  geom_rect(aes(ymin=-Inf, ymax=Inf, xmin=as.POSIXct(as.Date("2021-03-30")), xmax=as.POSIXct(as.Date("2021-04-09"))), fill="#00BA38", alpha=0.01)+
-  geom_rect(aes(ymin=-Inf, ymax=Inf, xmin=as.POSIXct(as.Date("2021-06-13")), xmax=as.POSIXct(as.Date("2021-07-18"))), fill="red", alpha=0.01)+ #week of Jun 13 to July 18th reported as "high" k brevis from Beck et al., 2022, use dates
+d15N<-ggplot(noNA_onlysites, aes(Date, `d15N..permil..vs.AIR.`))+
+  geom_vline(xintercept = as.Date("2021-07-05"), linetype=4, color="black")+ #date of tropical storm Elsa
+  geom_rect(aes(ymin=-Inf, ymax=Inf, xmin=as.Date("2021-03-30"), xmax=as.Date("2021-04-09")), fill="#00BA38", alpha=0.01)+
+  geom_rect(aes(ymin=-Inf, ymax=Inf, xmin=as.Date("2021-06-13"), xmax=as.Date("2021-07-18")), fill="red", alpha=0.01)+ #week of Jun 13 to July 18th reported as "high" k brevis from Beck et al., 2022, use dates
   geom_point()+
   geom_line()+
   facet_wrap(.~Location)+
@@ -254,7 +222,7 @@ d15N<-ggplot(noNA_onlysites, aes(Date, `d15N (permil, vs AIR)`))+
     text = element_text(size = 14), 
     axis.text = element_text(size = 9), 
     axis.text.x = element_text(angle = -45, hjust = 0.1, vjust = 0.1)
-        )
+        )  
 
 d15N
 
@@ -266,130 +234,16 @@ iso_CN_plot<-plot_grid(d15N, d13C, labels=c("A", "B"), ncol=1)
 ggsave("./Figures/Frontiers_2022/2022_12_12_iso_CN_plot.png", iso_CN_plot, width=10, height=8)
 
 ```
-<!---Figure 2. POM d15N values. 
-
-Extra notes: Inorganic N species can have wide range of d15N values. d15N enriched 2 to 3 permil with each trophic level (Bianchi and Canuel, 2011). From Sharp (2017) average value of N fixation is less than 0permil. From Sharp 2017/Velinsky et al (1991), waters with NH4+ of 40uM, fractionation between POM and NH4 modeled to be -20 to -30permil. with lower concentrations, 9uM fractionations were -15 to -15permil. **Effluent had a NH4-N concentration of 61.6 uM.** Ammonium is lighter than nitrate by several per mil. Peterson and Fry's average estimate for precip are -18 to 8 for ammonium and -15 to 3 permil for NO3-. d15N values from most ocean materials are positive. 
--->
-
-### C:N for all locations and sampling dates for POM
-```{r, echo=FALSE, warning=FALSE}
-
-eff_CN<-ggplot(effluent, aes(Location, CN))+
-  geom_point()+
-  scale_y_continuous(limits = c(3, 13))+
-  theme_cowplot(font_size = 8)+
-   panel_border(color="black")+
-  xlab("")
-
-POM_CN<-ggplot(noNA_onlysites, aes(Date, CN))+
-  geom_point()+
-  facet_wrap(.~Location)+
-  theme_cowplot(font_size = 8)+
-   panel_border(color="black")
-
-plot_grid(POM_CN, eff_CN, rel_widths = c(1, 0.25))
-```
-
-### %TN for all locations and sampling dates for POM
-```{r, echo=FALSE, warning=FALSE}
-
-eff_TN<-ggplot(effluent, aes(Location, `wt %N`))+
-  geom_point()+
-  scale_y_continuous(limits = c(0, 3))+
-  theme_cowplot(font_size = 8)+
-   panel_border(color="black")+
-  xlab("")
-
-POM_TN<-ggplot(noNA_onlysites, aes(Date, `wt %N`))+
-  geom_point()+
-  facet_wrap(.~Location)+
-  theme_cowplot(font_size = 8)+
-   panel_border(color="black")
-
-plot_grid(POM_TN, eff_TN, rel_widths = c(1, 0.25))
-```
-
-### %TC for all locations and sampling dates for POM
-```{r, echo=FALSE, warning=FALSE}
-
-eff_TC<-ggplot(effluent, aes(Location, `wt %C`))+
-  geom_point()+
-  scale_y_continuous(limits = c(1, 12))+
-  theme_cowplot(font_size = 8)+
-   panel_border(color="black")+
-  xlab("")
-
-POM_TC<-ggplot(noNA_onlysites, aes(Date, `wt %C`))+
-  geom_point()+
-  facet_wrap(.~Location)+
-  theme_cowplot(font_size = 8)+
-   panel_border(color="black")
-
-plot_grid(POM_TC, eff_TC, rel_widths = c(1, 0.25))
-```
-Explore variablity in St. Joseph sound data
-Appears to be related to the site location, SSJS3 is the northernmost site
-
-```{r, echo=FALSE, warning=FALSE, include=FALSE}
-#variability in St Joseph sound, so see if it's variability for each transect
-
-StJoe<-filter(noNA_onlysites, Location=="St. Joseph Sound")
-
-ggplot(StJoe, aes(Date, `wt %C`))+
-  geom_point()+
-  facet_wrap(.~Site)+
-  theme_cowplot(font_size = 8)+
-   panel_border(color="black")
-
-
-ggplot(StJoe, aes(Date, `d13C (permil, vs VPDB)`))+
-  geom_point()+
-  facet_wrap(.~Site)+
-  theme_cowplot(font_size = 8)+
-   panel_border(color="black")
-
-ggplot(StJoe, aes(Date, `wt %N`))+
-  geom_point()+
-  facet_wrap(.~Site)+
-  theme_cowplot(font_size = 8)+
-   panel_border(color="black")
-
-ggplot(StJoe, aes(Date, `wt %N`))+
-  geom_point()+
-  facet_wrap(.~Site)+
-  theme_cowplot(font_size = 8)+
-   panel_border(color="black")
-
-```
-
-```{r, include=FALSE, echo=FALSE}
-###extra code for shading dates, not used yet
- # geom_rect(data = data.frame(xmin = decimal_date(as.Date(c("1924-01-01"))),
- #                              xmax = decimal_date(as.Date(c("1928-12-31"))),
- #                              ymin = -Inf,
- #                              ymax = Inf),
- #            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
- #            fill = "grey", alpha = 0.5)
-
-```
 
 ## Nutrient data
 ```{r, echo=FALSE, warning=FALSE, include=FALSE}
 
-nutrients_raw<-readxl::read_excel("../../Data/PineyPoint_all_samples_w_data.xlsx")
+nutrients_raw<-read_excel("Data/PineyPoint_all_samples_w_data_simple.xlsx")
 
 #filter just for the first year April 2021 to 2022
 nutrients_year<-nutrients_raw[nutrients_raw$`Date of Sample collection` < "2022-05-01", ]
 
-nutrients_year$`OrthoP (ug/L)`<-as.numeric(nutrients_year$`OrthoP (ug/L)`)
-nutrients_year$`Salinity (ppt)`<-as.numeric(nutrients_year$`Salinity (ppt)`)
 
-nutrients_onlysites<-filter(nutrients_year, Location==("Piney Point")|Location==("Bishop Harbor")|Location==("Joe Bay")| 
-                            Location=="St. Joseph Sound")
-
-nutrients_onlysites$Location<-factor(nutrients_onlysites$Location, levels=c("Piney Point", "Bishop Harbor", "Joe Bay", "Aug"))
-
-nutrients_effluent<-filter(nutrients_year, Location==("Effluent"))
 
 ```
 
@@ -416,658 +270,3 @@ summary_all_nutrients<-nutrients_year_filtered %>%
 write.csv(summary_all_nutrients, "2023_01_10_nutrient_data_summarized.csv")
 
 ```
-
-
-### Orthophosphate
-```{r, echo=FALSE, warning=FALSE}
-
-eff_orthoP<-ggplot(nutrients_effluent, aes(Location, `OrthoP (ug/L)`))+
-  geom_point()+
-  scale_y_continuous(limits = c(0, 170000))+
-  theme_cowplot(font_size = 8)+
-   panel_border(color="black")+
-  xlab("")
-
-orthoP<-ggplot(nutrients_onlysites, aes(`Date of Sample collection`, `OrthoP (ug/L)`))+
-  geom_point()+
-  geom_smooth(se=FALSE)+
-  facet_wrap(.~Location)+
-  theme_cowplot(font_size = 8)+
-  panel_border(color="black")
-
-plot_grid(orthoP, eff_orthoP, rel_widths = c(1, 0.25))
-```
-
-### Total phosphorus
-```{r, echo=FALSE, warning=FALSE}
-
-eff_TP<-ggplot(nutrients_effluent, aes(Location, `TotalP (ug/L)`))+
-  geom_point()+
-  scale_y_continuous(limits = c(0, 170000))+
-  theme_cowplot(font_size = 8)+
-   panel_border(color="black")+
-  xlab("")
-
-TP<-ggplot(nutrients_onlysites, aes(`Date of Sample collection`, `TotalP (ug/L)`))+
-  geom_point()+
-  geom_smooth(se=FALSE)+
-  facet_wrap(.~Location)+
-  theme_cowplot(font_size = 8)+
-  panel_border(color="black")
-
-plot_grid(TP, eff_TP, rel_widths = c(1, 0.25))
-```
-
-### TKN
-```{r, echo=FALSE, warning=FALSE}
-TKN<-ggplot(nutrients_onlysites, aes(`Date of Sample collection`, `TKN (mg/L)`))+
-  geom_point()+
-  facet_wrap(.~Location, scales="free_y")+
-  theme_cowplot(font_size = 8)+
-  panel_border(color="black")
-
-plot_grid(TKN, eff_TP, rel_widths = c(1, 0.25))
-```
-
-### NH4-N
-```{r, echo=FALSE, warning=FALSE}
-
-eff_NH4<-ggplot(nutrients_effluent, aes(Location, `NH4N (mg/L)`))+
-  geom_point()+
-  scale_y_continuous(limits = c(0, 2))+
-  theme_cowplot(font_size = 8)+
-   panel_border(color="black")+
-  xlab("")
-
-nutrients_onlysites_greater0_NH4<-filter(nutrients_onlysites, `NH4N (mg/L)`>0)
-
-NH4<-ggplot(nutrients_onlysites_greater0_NH4, aes(`Date of Sample collection`, `NH4N (mg/L)`))+
-  geom_point()+
-  facet_wrap(.~Location, scales="free_y")+
-  theme_cowplot(font_size = 8)+
-  panel_border(color="black")
-
-plot_grid(NH4, eff_NH4, rel_widths = c(1, 0.25))
-```
-
-### NOx
-```{r, echo=FALSE, warning=FALSE}
-
-eff_NOx<-ggplot(nutrients_effluent, aes(Location, `NOx (mg/L)`))+
-  geom_point()+
-  scale_y_continuous(limits = c(0, 1))+
-  theme_cowplot(font_size = 8)+
-   panel_border(color="black")+
-  xlab("")
-
-#remove values <0, because below LOD
-NOx_data<-filter(nutrients_onlysites, `NOx (mg/L)`>0)
-
-NOx<-ggplot(NOx_data, aes(`Date of Sample collection`, `NOx (mg/L)`))+
-  geom_point()+
-  facet_wrap(.~Location)+
-  theme_cowplot(font_size = 8)+
-  panel_border(color="black")
-
-plot_grid(NOx, eff_NOx, rel_widths = c(1, 0.25))
-```
-
-```{r, echo=FALSE, warning=FALSE}
-
-chl<-ggplot(nutrients_onlysites, aes(`Date of Sample collection`, `Total Chl`))+
-  geom_point()+
-  facet_wrap(.~Location)+
-  theme_cowplot(font_size = 8)+
-  panel_border(color="black")+
-  ylab("Total chlorophyll (ug/L)")
-
-chl
-```
-
-```{r, echo=FALSE}
-#nozeros<-filter(nutrients_onlysites, `NH4N (mg/L)`>0 & `NOx (mg/L)`>0)
-
-#withPOM<-full_join(nozeros, noNA_onlysites)
-
-## rename the date columns so they match and can be joined
-nutrients<-nutrients_raw %>% 
-  rename(Date=`Date of Sample collection`)
-
-#need to rename some of the SampleIDs in the noNA_date POM data
-POM<-mutate_if(noNA_date,
-                            is.character,
-                            str_replace_all, pattern = "Y", replacement = "X") %>% 
-                  mutate_if(is.character,
-                            str_replace_all, pattern="PineyPointEffluent", replacement="Piney Point Effluent") %>% 
-                  mutate_if(is.character,
-                            str_replace_all,  pattern="SSJS sonde", replacement="SSJS Sonde")
-
-nutrients<-mutate_if(nutrients,
-                            is.character,
-                            str_replace_all, pattern="JBYSI (Joe Bay)", replacement="JB Sonde") %>% 
-  mutate_if(is.character, str_replace_all, pattern="Effluent", replacement="Piney Point Effluent")
-
-all_data_w_eff<-full_join(POM, nutrients, by=c("SampleID", "Date"))
-
-```
-
-## Test plots to look at relationships between variables
-```{r, echo=FALSE}
-
-all_data_w_eff_noblank<-filter(all_data_w_eff, Location.x!="Blank")
-
-ggplot(all_data_w_eff_noblank, aes(`CN`, `d15N (permil, vs AIR)`, color=Date, shape=Location.x))+
-  geom_point()+
-  geom_smooth()
-
-ggplot(withPOM, aes(`wt %C`, 
-                     `d15N (permil, vs AIR)`))+
-  geom_point(aes(color=`Location`))+
-  geom_smooth()
-
-ggplot(withPOM, aes(`wt %N`, 
-                     `d15N (permil, vs AIR)`))+
-  geom_point(aes(color=`Location`))+
-  geom_smooth()
-
-### look for conservative behavior in ortho-P, TP, TKN, NH4
-
-all_data_w_eff_noblank$`Salinity raw (ppt)`<-as.numeric(all_data_w_eff_noblank$`Salinity raw (ppt)`)
-
-ggplot(all_data_w_eff_noblank, aes(`Salinity raw (ppt)`, `d13C (permil, vs VPDB)`))+
-  geom_point()+
-  geom_smooth()
-
-ggplot(all_data_w_eff_noblank, aes(`Salinity raw (ppt)`, `d15N (permil, vs AIR)`))+
-  geom_point()+
-  geom_smooth()
-
-ggplot(withPOM, aes(`Salinity (ppt)`, 
-                     `d15N (permil, vs AIR)`))+
-  geom_point(aes(color=`Location`))+
-  geom_smooth(method = "lm")
-
-ggplot(withPOM, aes(`Salinity (ppt)`, 
-                     `OrthoP (umol/L)`))+
-  geom_point(aes(color=`Location`))+
-  geom_smooth(method = "lm")
-
-
-```
-
-
-### Phytoplankton community data
-
-```{r, echo=FALSE}
-
-## received phytoplankton community data from the priority sites, since 4/2021, from E. Phlips. Have one file with biovolume and biomass, and another for phytoplankton biomass by group
-
-#first look at the simpler dataset, phytoplankton biomass by group in ug C/ml
-
-bygroup<-read_excel("../../Data/Phlips/Copy of Piney Point Phyto by group revised 10 07 2021.xlsx ", sheet = 1, skip=1)
-#skip the first row, which just says "Piney Point Phytoplankton by Group 10 07 2021", so we can keep column headers
-
-#column 9 was also left blank, remove
-#bygroup<-bygroup[,-9]
-
-#rename column names: Site, should be SampleID to match WQ data
-#rename DATE to Date of sample collection
-bygroup_renamed<-rename(bygroup, `Date of Sample collection`=DATE)
-bygroup_renamed<-rename(bygroup_renamed, SampleID=SITE)
-
-#phytogroups
-bygroup_keysites<-filter(bygroup_renamed,  Location=="Piney Point Effluent"|Location=="Piney Point"| Location=="Joe Bay"| Location=="Bishop Harbor"|Location=="St. Joseph Sound") %>% 
-  select(-Total)
-
-
-#create barplots over time series
-longPhyto<-pivot_longer(bygroup_keysites, !`Date of Sample collection`:Location, names_to="Group", values_to="Biomass_ugC_ml") %>% 
-  unique()
-
-#keep as character to make the bars larger/less dead space in the plot
-longPhyto$`Date of Sample collection`<-as.character(longPhyto$`Date of Sample collection`)
-
-#remove NA values
-longPhyto<-longPhyto[!is.na(longPhyto$Biomass_ugC_ml), ]
-
-#rename groups
-longPhyto<-mutate_if(longPhyto,
-                            is.character,
-                            str_replace_all, pattern = "Cyano", replacement = "Cyanobacteria") %>% 
-  mutate_if(is.character, str_replace_all, pattern = "Dino", replacement = "Dinoflagellate")
-
-longPhyto_effluent<-filter(longPhyto, Location=="Piney Point Effluent")
-longPhyto_keysites<-filter(longPhyto, Location=="Piney Point Effluent"| Location=="Piney Point"| Location=="Joe Bay"| Location=="Bishop Harbor"|Location=="St. Joseph Sound")
-
-longPhyto_keysites$Location<-ordered(longPhyto_keysites$Location, c("St. Joseph Sound", "Piney Point Effluent", "Piney Point", "Bishop Harbor", "Joe Bay"))
-
-longPhyto_keysites<-mutate_if(longPhyto_keysites,
-                            is.character,
-                            str_replace_all, pattern = "Effluent", replacement = "Discharge")
-
-
-sites<-ggplot(longPhyto_keysites, aes(x=`Date of Sample collection`, y=Biomass_ugC_ml, fill=factor(Group)))+
-  geom_bar(stat="identity")+ #add , position="fill" if you want % barplots
-  facet_wrap(.~Location, ncol=1, scales="free_y")+
-  labs(fill = "Group")+
-  scale_fill_brewer(palette="Dark2")+
-  theme_classic()+
-  ylab(expression(paste("Biomass (µg C ml"^-1,")")))+
-  theme(text = element_text(size = 18))+
-  xlab("")+
-  theme(axis.text.x = element_text(angle = 90))
-
-effluent<-ggplot(longPhyto_effluent, aes(x=`Date of Sample collection`, y=Biomass_ugC_ml, fill=factor(Group)))+
-  geom_bar(stat="identity")+ #add , position="fill" if you want % barplots
-  facet_wrap(.~Location, ncol=1)+
-  labs(fill = "Phytoplankton Group")+
-  scale_fill_brewer(palette="Dark2")+
-  theme_classic()+
-  theme(axis.text.x = element_text(angle = -45))+
-  ylab(expression(paste("Biomass (ug C ml"^-1,")")))+
-  theme(text = element_text(size = 18))+
-  ylim(0,3)+
-  theme(legend.position = "none")+
-  xlab("")
-
-plot_grid(sites, effluent, rel_widths = c(1, 0.5))
-  
-
-```
-
-
-```{r, echo=FALSE}
-#interested in investigating relationships between ciliates and picocyanos and nannoplankton
-#bring in full dataset
-
-species<-read_excel("../../Data/Phlips/Piney Point phytoplankton 07 22 2021 draft.xlsx ", sheet = 1)
-
-#read in the key for sites/regions
-key<-read_excel("../../../PineyPoint/SiteID and Regions Piney Point RAPID.xlsx")
-
-#get column names to match
-key<-rename(key, Site=SITE, Location=REGION)]
-
-#join key with species
-species_key<-full_join(species, key, by="Site")
-
-## Garrett et al., 2011 found Heterosigma akashiwo and Prorocentrum minimum bloomed after previous phosphate release in Bishop Harbor
-
-species_key_w_percent<-species_key %>% 
-  group_by(Date, Site, Location) %>% 
-  mutate(totalbiomass=sum(Biomass)) %>% 
-  ungroup() %>% 
-  group_by(Date, Site, Location, Species) %>% 
-  mutate(percentbiomass=(Biomass/totalbiomass)*100) %>%
-  ungroup() %>% 
-  group_by(Date, Location, Species) %>% 
-  mutate(averageBiomass=mean(Biomass, na.rm=TRUE), 
-         averagePercentBiomass=mean(percentbiomass, na.rm=TRUE)) %>% 
-  unique()
-  
-
-akashiwo<-filter(species_key_w_percent, Species=="Heterosigma akashiwo") %>% 
-    filter(Location=="Piney Point"| Location=="Joe Bay"| Location=="Bishop Harbor"|Location=="St. Joseph Sound") %>% 
-  unique()
-
-
-ggplot(akashiwo, aes(Date, averageBiomass, fill=factor(Species)))+
-         geom_bar(stat="identity")+
-         facet_wrap(.~Location, ncol=1, scales="free_y")+
-        labs(fill = "Species")+
-        scale_fill_brewer(palette="Dark2")+
-        theme_classic()+
-        theme(axis.text.x = element_text(angle = -45))+
-        ylab(expression(paste("Biomass (ug C ml"^-1,")")))+
-        theme(text = element_text(size = 18))  
-
-prorocentrum<-filter(species_key_w_percent, grepl("Prorocentrum", Species)) %>% 
-  unique() %>% 
-  filter(Location=="Piney Point"| Location=="Joe Bay"| Location=="Bishop Harbor"|Location=="St. Joseph Sound") %>% 
-  unique()
-
-
-prorocentrum$Date<-as.character(prorocentrum$Date)
-
-prorocentrum$Location<-ordered(prorocentrum$Location, c("St. Joseph Sound", "Piney Point", "Bishop Harbor", "Joe Bay"))
-
-
-ggplot(prorocentrum, aes(Date, averageBiomass, fill=factor(Species)))+
-         geom_bar(stat="identity")+
-         facet_wrap(.~Location, ncol=1)+
-        labs(fill = "Species")+
-        scale_fill_brewer(palette="Dark2")+
-        theme_classic()+
-        theme(axis.text.x = element_text(angle = -45))+
-        ylab(expression(paste("Biomass (ug C ml"^-1,")")))+
-        theme(text = element_text(size = 18))  
-
-
-
-#create simple dataframe to make long format
-simplespecies<-select(species_key, Site, Location, Date, Biomass, Species) %>% 
-  unique()
-
-#make wide format, for easier plotting
-wideSpecies<-pivot_wider(simplespecies, names_from = Species, values_from=Biomass) %>% 
-  unique()
-
-#see if ciliates are correlated with picos
-#will likely need to group ciliates further
-ggplot(wideSpecies, aes(`Nannoplankton (2µ - 5µ)`, `≥ 10 ≤ 20µ diameter ciliate (Phylum Ciliophora)`))+
-         geom_point()
-
-
-
-```
-
-```{r, echo=FALSE}
-#bring in chlorophyll data
-chl<-read_excel("../../Data/Phlips/Piney Point Chl for Elise 09 17 2021 trimmed.xlsx")
-
-
-chl_keysites<-filter(chl, Location=="Piney Point"| Location=="Joe Bay"| Location=="Bishop Harbor"|Location=="St. Joseph Sound")
-
-
-chl_keysites$Location<-ordered(chl_keysites$Location, c("St. Joseph Sound", "Piney Point", "Bishop Harbor", "Joe Bay"))
-
-chl_keysites$`Date of Sample Collection`<-as.character(chl_keysites$`Date of Sample Collection`)
-
-ggplot(chl_keysites, aes(x= `Date of Sample Collection`, y=`Total`))+
-  geom_point()+
-  facet_wrap(.~Location, ncol=1)+
-  geom_smooth(se=FALSE)+
-  ylab("Total chl (ug/L)")+
-  xlab("")+
-   theme_classic()+
-  theme(text = element_text(size = 18))+
-  theme(axis.text.x = element_text(angle = -45))
-
-chl_phyto<-full_join(chl_keysites, )
-
-
-## there are some inconsistencies between the Phlip's lab site IDs and the water sample IDs
-## its mostly related to cases, although the first batch of samples 1-4 were labeled 1Y-4Y for water samples, 1X-4X for phyto samples
-## make sampleIDs consistent
-
-bygroup_renamed<-mutate_if(bygroup_renamed,
-                            is.character,
-                            str_replace_all, pattern = "x", replacement = "Y") %>% 
-                  mutate_if(is.character,
-                            str_replace_all, pattern="BHSONDE", replacement="BH Sonde") %>% 
-                  mutate_if(is.character,
-                            str_replace_all,  pattern="JBYSI", replacement="JB Sonde") %>% 
-                  mutate_if(is.character,
-                            str_replace_all,  pattern="JB6", replacement="JB-6") %>% 
-                  mutate_if(is.character,
-                            str_replace_all, pattern="JBSONDE", replacement="JB Sonde") %>% 
-                  mutate_if(is.character,
-                            str_replace_all, pattern="PPEFFL", replacement="Piney Point Effluent") %>% 
-                  mutate_if(is.character,
-                            str_replace_all, pattern="PPSONDE", replacement="PP Sonde") %>% 
-                  mutate_if(is.character,
-                            str_replace_all, pattern="SSJSSOND", replacement="SSJS Sonde") %>% 
-                  mutate_if(is.character,
-                            str_replace_all, pattern="Palmisola Bay 4", replacement="Palmisola Bay")
-
-
-
-##join with the water chem data by date and site
-chem_phyto_no_POM<-full_join(bygroup_renamed, nutrients)
-
-```
-
-```{r, echo=FALSE}
-
-chem_phyto_no_eff<-filter(chem_phyto_no_POM, SampleID!="Piney Point Effluent")
-chem_phyto_eff<-filter(chem_phyto_no_POM, SampleID=="Piney Point Effluent")
-
-# Generate plots for CERF presentation
-KeyLocations<-filter(nutrients, Location=="Piney Point"|
-                                        Location=="Joe Bay"|
-                                        Location=="Bishop Harbor"|
-                                        Location=="St. Joseph Sound")
-                                        
-
-KeyLocations$Location<-ordered(KeyLocations$Location, c("St. Joseph Sound", "Piney Point", "Bishop Harbor", "Joe Bay"))
-
-
-ggplot(KeyLocations, aes(x= Date, y=`OrthoP (ug/L)`))+
-  geom_point()+
-  facet_wrap(.~Location, ncol=1)+
-  geom_smooth(se=FALSE)+
-  theme_classic()+
-  ggtitle("Orthophosphate")+
-  theme(text = element_text(size = 18)) 
-
-ggplot(KeyLocations, aes(x= Date, y=`TotalP (ug/L)`))+
-  geom_point()+
-  facet_wrap(.~Location, ncol=1)+
-  geom_smooth(se=FALSE)+
-  theme_classic()+
-  ggtitle("Total Phosphorus")+
-  theme(text = element_text(size = 18)) 
-
-ggplot(KeyLocations, aes(x= Date, y=`NH4N (mg/L)`))+
-  geom_point()+
-  facet_wrap(.~Location, ncol=1)+
-  geom_smooth(se=FALSE)
-
-ggplot(KeyLocations, aes(x= Date, y=`TKN (mg/L)`))+
-  geom_point()+
-  facet_wrap(.~Location, ncol=1)+
-  geom_smooth(se=FALSE)
-
-
-ggplot(chem_phyto_eff, aes(x= Date, y=`OrthoP (ug/L)`))+
-  geom_point()
-
-
-chemPhyto_keylocations<-filter(chem_phyto_no_POM, Location=="Piney Point"|
-                                        Location=="Joe Bay"|
-                                        Location=="Bishop Harbor"|
-                                 Location=="St. Joseph Sound")
-
-ggplot(chemPhyto_keylocations, aes(x=`Date of Sample collection`, y=Karenia))+
-  geom_point()+
-  geom_line()+
-  ylab("Karenia biomass (ug C/ml)")+
-  facet_wrap(.~Location, ncol=1)
-
-ggplot(chemPhyto_keylocations, aes(x=`Date of Sample collection`, y=Diatom))+
-  geom_point()+
-  geom_line()+
-  ylab("Diatom biomass (ug C/ml)")+
-  facet_wrap(.~Location, ncol=1)
-
-
-longPhytoNutrients<-full_join(longPhyto, KeyLocations)
-
-longPhytoNutrients<-unique(longPhytoNutrients)
-
-ggplot(longPhytoNutrients, aes(x=`Date of Sample collection`, y=Biomass_ugC_ml, fill=factor(Group)))+
-  geom_bar(stat="identity")+ #add , position="fill" if you want % barplots
-  ylab("Biomass (ug C/ml)")+
-  facet_wrap(.~Location, ncol=1)+
-  geom_smooth(aes(x= `Date of Sample collection`, y=`OrthoP (ug/L)`), se=FALSE)+
-  scale_y_continuous(sec.axis=sec_axis(~., name="OrthoP (ug/L)"))
-
-ggplot(longPhytoNutrients, aes(x=`Date of Sample collection`, y=Diatom))+
-  geom_point()+
-  geom_line()+
-  ylab("Diatom biomass (ug C/ml)")+
-  facet_wrap(.~Location, ncol=1)
-
-```
-
-
-```{r, echo=FALSE}
-###Bring in water stable isotope values
-water<-read_excel("../../Data/UF_SIL/Water/Picarro_master_dataset.xlsx")
-
-#remove standards for plotting
-waterSamples<-filter(water, Location!="Standard"&Location!="Blank")
-
-#plot summary for all sites
-ggplot(waterSamples, aes(x=Date, y=`δ18OVSMOW (‰)`))+
-  geom_point()+
-  facet_wrap(.~Location, ncol=1)
-
-ggplot(waterSamples, aes(x=Date, y=`δ2HVSMOW (‰)`))+
-  geom_point()+
-  facet_wrap(.~Location, ncol=1)
-
-ggplot(waterSamples, aes(`d18OVSMOW (‰)`, y=`δ2HVSMOW (‰)`))+
-  geom_point()
-
-ggplot(waterSamples, aes(x=`d18OVSMOW (‰)`, y=`δ2HVSMOW (‰)`))+
-         geom_point(aes(color=Location))+
-  geom_smooth(method = lm, se=FALSE)+
-          geom_abline(aes(intercept=10,slope=8))+
-  xlim(-2, 3)+
-  ylim(7, 20)
-
-#falls outside of the expected line
-
-
-##read in precip data
-
-
-#match/join with nutrients
-
-waterIsoChem<-full_join(waterSamples, nutrients)
-
-waterIsoChem_noeff<-filter(waterIsoChem, Location!="Piney Point Effluent")
-
-ggplot(waterIsoChem, aes(x=`d18OVSMOW (‰)`, y=`δ2HVSMOW (‰)`))+
-         geom_point()+
-  geom_smooth(method = lm, se=FALSE)+
-          geom_abline(aes(intercept=10,slope=8))+
-  xlim(-2, 3)+
-  ylim(7, 20)
-
-ggscatter(waterIsoChem, x=`d18OVSMOW (‰)`, y=`δ2HVSMOW (‰)`, add="reg.line")+
-  stat_cor(label.y=17)+
-  stat_regline_equation(label.y=16)
-
-
-```
-
-```{r, echo=FALSE}
-
-#bring in the sonde dataset
-
-
-pp<-read_excel("../../Data/Sonde_data/Sonde_data_from_Alteri_gdrive/Sonde_data_consolidated_April_to_July.xlsx", sheet = 1)
-ssjs<-read_excel("../../Data/Sonde_data/Sonde_data_from_Alteri_gdrive/Sonde_data_consolidated_April_to_July.xlsx", sheet = 2)
-bh<-read_excel("../../Data/Sonde_data/Sonde_data_from_Alteri_gdrive/Sonde_data_consolidated_April_to_July.xlsx", sheet = 3)
-jb<-read_excel("../../Data/Sonde_data/Sonde_data_from_Alteri_gdrive/Sonde_data_consolidated_April_to_July.xlsx", sheet = 4)
-
-# join all dataset together
-pp_ssjs_joined<-full_join(pp, ssjs)
-pp_ssjs_bh<-full_join(pp_ssjs_joined, bh)
-pp_ssjs_bh_jb<-full_join(pp_ssjs_bh, jb)
-
-#plot chlorophyll
-ggplot(pp_ssjs_bh_jb, aes(x= `Date (MM/DD/YYYY)`, y=`Chlorophyll ug/L`))+
-  geom_point()+
-  facet_wrap(.~Location, ncol=1, scales="free_y")+
-  geom_smooth(se=FALSE)+
-  theme_classic()+
-  ggtitle("Chlorophyll")+
-  theme(text = element_text(size = 18))
-
-ggplot(pp_ssjs_bh_jb, aes(x= `Date (MM/DD/YYYY)`, y=`ODO mg/L`))+
-  geom_point()+
-  facet_wrap(.~Location, ncol=1)+
-  geom_smooth(se=FALSE)+
-  theme_classic()+
-  ggtitle("Dissolved Oxygen (mg/L)")+
-  theme(text = element_text(size = 18))
-
-ggplot(pp_ssjs_bh_jb, aes(x= `Date (MM/DD/YYYY)`, y=`Cond µS/cm`))+
-  geom_point()+
-  facet_wrap(.~Location, ncol=1)+
-  geom_smooth(se=FALSE)+
-  theme_classic()+
-  ggtitle("Cond µS/cm")+
-  theme(text = element_text(size = 18))
-
-
-ggplot(pp_ssjs_bh_jb, aes(x= `Date (MM/DD/YYYY)`, y=`Sal psu`))+
-  geom_point()+
-  facet_wrap(.~Location, ncol=1, scales="free_y")+
-  geom_smooth(se=FALSE)+
-  theme_classic()+
-  ggtitle("Sal psu")+
-  theme(text = element_text(size = 18))
-
-sonde_simple<-pp_ssjs_bh_jb
-
-sonde_simple$`Date (MM/DD/YYYY)`<-as.character(sonde_simple$`Date (MM/DD/YYYY)`)
-sonde_simple$`Time (HH:mm:ss)`<-as.character(sonde_simple$`Time (HH:mm:ss)`)
-
-July<-filter(sonde_simple, `Date (MM/DD/YYYY)` == "2021-07-17")
-
-July_10to19h<-filter(July, grepl("1899-12-31 1", `Time (HH:mm:ss)`))
-
-
-ggplot(sonde_simple, aes(x= `Date (MM/DD/YYYY)`, y=`Sal psu`))+
-  geom_point()+
-  facet_wrap(.~Location, ncol=1, scales="free_y")+
-  geom_smooth(se=FALSE)+
-  theme_classic()+
-  ggtitle("Sal psu")+
-  theme(text = element_text(size = 18))
-
-July<-mutate(July, time=`Time (HH:mm:ss)`)
-July$time<-gsub("1899-12-31", "", July$time)
-
-ggplot(sonde_simple, aes(x= `Time (HH:mm:ss)`, y=`Sal psu`))+
-  geom_point()+
-  facet_wrap(.~Location, ncol=1, scales="free_y")+
-  #geom_smooth(se=FALSE)+
-  theme_classic()+
-  ggtitle("Sal psu 2021-07-17")+
-  theme(text = element_text(size = 18))+
-  theme(axis.text.x = element_text(angle = 90))
-
-ggplot(July, aes(x= time, y=`Sal psu`))+
-  geom_point()+
-  facet_wrap(.~Location, ncol=1, scales="free_y")+
-  #geom_smooth(se=FALSE)+
-  theme_classic()+
-  ggtitle("Sal psu 2021-07-17")+
-  theme(text = element_text(size = 18))+
-  theme(axis.text.x = element_text(angle = 90))
-
-ggplot(July_10to19h, aes(x= `Time (HH:mm:ss)`, y=`Sal psu`))+
-  geom_point()+
-  facet_wrap(.~Location, ncol=1, scales="free_y")+
-  #geom_smooth(se=FALSE)+
-  theme_classic()+
-  ggtitle("Sal psu 2021-07-17 from 10:00 to 19:00")+
-  theme(text = element_text(size = 18))+
-  theme(axis.text.x = element_text(angle = 90))
-
-July_10h<-filter(sonde_simple, grepl("1899-12-31 10", `Time (HH:mm:ss)`))
-
-ggplot(July_10h, aes(x= `Date (MM/DD/YYYY)`, y=`Sal psu`))+
-  geom_point()+
-  facet_wrap(.~Location, ncol=1, scales="free_y")+
-  geom_smooth(se=FALSE)+
-  theme_classic()+
-  ggtitle("Sal psu")+
-  theme(text = element_text(size = 18))+
-  theme(axis.text.x = element_text(angle = 90))
-```
-
-
-
-salinity_less_10<-filter()
-
-
-
-
-
-
