@@ -4,7 +4,7 @@ library(MixSIAR)
 
 ### from https://peerj.com/articles/5096/
 
-mix.filename.pp<-"../../Data/MixSIAR/all_sites_mixture_biweekly.csv"
+mix.filename.pp<-"../../Data/MixSIAR/2022_12_13_all_sites_mixture_biweekly.csv"
 mix.pp <- load_mix_data(filename=mix.filename.pp, 
                      iso_names=c("d13C","d15N"),
                      factors=c("Location"), 
@@ -26,7 +26,7 @@ source.pp <- load_source_data(filename=source.filename.pp,
 discr.filename<-"../../Data/MixSIAR/discr_tidy_2022_10_11.csv"
 discr <- load_discr_data(filename=discr.filename, mix.pp)
 
-plot_data(filename="./MixSIAR_output/2022_10_17_all_sites_biweekly_cont_veryLong/isospace_plot", plot_save_pdf=TRUE, plot_save_png=TRUE, mix.pp,source.pp, discr)
+plot_data(filename="./MixSIAR_output/2022_12_13_all_sites_biweekly_cont_veryLong/isospace_plot", plot_save_pdf=TRUE, plot_save_png=TRUE, mix.pp,source.pp, discr)
 
 calc_area(source=source.pp,mix=mix.pp,discr=discr)
 #21.53565
@@ -35,7 +35,7 @@ plot_prior(alpha.prior=1,source.pp)
 
 # Write the JAGS model file
 
-model_filename <- "./MixSIAR_output/2022_10_17_all_sites_biweekly_cont_veryLong/MixSIAR_model_all_sites_biweekly_cont_very_long.txt"   # Name of the JAGS model file
+model_filename <- "./MixSIAR_output/2022_12_13_all_sites_biweekly_cont_veryLong/MixSIAR_model_all_sites_biweekly_cont_very_long.txt"   # Name of the JAGS model file
 resid_err <- TRUE
 process_err <- TRUE
 write_JAGS_model(model_filename, resid_err, process_err, mix.pp, source.pp)
@@ -119,3 +119,5 @@ plot_continuous_var(jags.1, mix.pp, source.pp, alphaCI=0.75, output_options=list
                                                                      TRUE, geweke = TRUE, diag_save = TRUE, diag_name = "diagnostics", indiv_effect =
                                                                      TRUE, plot_post_save_png = TRUE, plot_pairs_save_png = TRUE, plot_xy_save_png =
                                                                      TRUE, diag_save_ggmcmc = TRUE))
+
+#with the full dataset, poor performance of the model. Failed Gelman and Geweke diagnostic
